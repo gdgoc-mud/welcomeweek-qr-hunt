@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Endo's Side Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Mono&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --text: #e8eaed;
+    --text-muted: #9aa0a6;
+    --blue: #8ab4f8;
+    --green: #81c995;
+    --yellow: #fdd663;
+    --red: #f28b82;
+    --accent: #8ab4f8;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Roboto', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+
+  /* ── Header ── */
+  header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  header img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  header .title {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+
+  header .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── Track badge ── */
+  .track-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Google Sans', sans-serif;
+  }
+
+  .track-1 { background: #1a3a5c; color: #8ab4f8; border: 1px solid #2d5a8e; }
+  .track-2 { background: #1a3d2e; color: #81c995; border: 1px solid #2d6b4e; }
+  .track-3 { background: #3d2e1a; color: #fdd663; border: 1px solid #6b5020; }
+  .track-4 { background: #3a1a1a; color: #f28b82; border: 1px solid #7a2e28; }
+  .track-5 { background: #2e1a3d; color: #c58af9; border: 1px solid #5a2e8a; }
+  .track-6 { background: #1a3a3a; color: #78d9ec; border: 1px solid #2a6e7e; }
+
+  /* ── Progress ── */
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .progress-count {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .progress-count span {
+    font-size: 16px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .progress-bar-bg {
+    width: 100%;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .track-1 .progress-bar-fill, .fill-1 { background: #8ab4f8; }
+  .track-2 .progress-bar-fill, .fill-2 { background: #81c995; }
+  .track-3 .progress-bar-fill, .fill-3 { background: #fdd663; }
+  .track-4 .progress-bar-fill, .fill-4 { background: #f28b82; }
+  .track-5 .progress-bar-fill, .fill-5 { background: #c58af9; }
+  .track-6 .progress-bar-fill, .fill-6 { background: #78d9ec; }
+
+  /* ── Phrase fragments grid ── */
+  .fragments-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .fragment-chip {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: 'Google Sans Mono', monospace;
+    font-size: 13px;
+    transition: all 0.3s ease;
+  }
+
+  .fragment-chip.found {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .fragment-chip.empty {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+  }
+
+  /* ── Latest find ── */
+  .latest-find {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  .latest-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .latest-text .clue-num {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+
+  .latest-text .fragment-word {
+    font-family: 'Google Sans Mono', monospace;
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ── States ── */
+  #screen-welcome, #screen-scan, #screen-wrong-track,
+  #screen-already-scanned, #screen-complete, #screen-invalid {
+    width: 100%;
+    max-width: 480px;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeUp 0.35s ease forwards;
+  }
+
+  .active-screen { display: flex !important; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── State illustrations ── */
+  .state-icon {
+    font-size: 48px;
+    text-align: center;
+    margin: 8px 0;
+  }
+
+  .state-title {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--text);
+  }
+
+  .state-body {
+    font-size: 14px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* ── Completion ── */
+  .phrase-reveal {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    text-align: center;
+  }
+
+  .phrase-reveal .label {
+    font-size: 11px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .phrase-reveal .full-phrase {
+    font-family: 'Google Sans Mono', monospace;
+    font-size: 18px;
+    color: var(--text);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    word-break: break-word;
+  }
+
+  /* ── Confetti ── */
+  .confetti-wrap {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+    overflow: hidden;
+  }
+
+  .confetti-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── Reset button ── */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-family: 'Google Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--blue);
+    color: #0f0f0f;
+  }
+
+  .btn-primary:hover { filter: brightness(1.1); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+  /* ── Welcome ── */
+  .welcome-tracks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .track-pill {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: 'Google Sans', sans-serif;
+    font-weight: 500;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    width: 100%;
+  }
+
+  /* ── Scan success pulse ── */
+  .pulse-ring {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    position: relative;
+  }
+
+  .pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    animation: pulseRing 1s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes pulseRing {
+    0%   { transform: scale(0.8); opacity: 0.6; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+
+  .pulse-1::before { background: #8ab4f833; border: 2px solid #8ab4f8; }
+  .pulse-2::before { background: #81c99533; border: 2px solid #81c995; }
+  .pulse-3::before { background: #fdd66333; border: 2px solid #fdd663; }
+  .pulse-4::before { background: #f28b8233; border: 2px solid #f28b82; }
+  .pulse-5::before { background: #c58af933; border: 2px solid #c58af9; }
+  .pulse-6::before { background: #78d9ec33; border: 2px solid #78d9ec; }
+
+  /* bg-icon */
+  .pulse-1 { background: #1a3a5c; }
+  .pulse-2 { background: #1a3d2e; }
+  .pulse-3 { background: #3d2e1a; }
+  .pulse-4 { background: #3a1a1a; }
+  .pulse-5 { background: #2e1a3d; }
+  .pulse-6 { background: #1a3a3a; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <img src="Dark.png" alt="GDGoC Logo" onerror="this.style.background='#2e2e2e';this.style.display='flex';this.style.alignItems='center';this.style.justifyContent='center';this.innerHTML='🔵'">
+  <div>
+    <div class="title">Endo's Side Quest</div>
+    <div class="subtitle">GDGoC × Welcome Week</div>
+  </div>
+</header>
+
+<!-- Confetti container -->
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<!-- ── SCREEN: Welcome ── -->
+<div id="screen-welcome">
+  <div class="card">
+    <div class="state-icon">🗺️</div>
+    <div class="state-title" style="margin-bottom:8px">Find Endo's Fragments</div>
+    <div class="state-body">Scan QR codes hidden around campus to collect your track's secret phrase. Head back to the booth when you have all 8.</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Active Tracks</div>
+    <div class="welcome-tracks" id="trackList"></div>
+  </div>
+  <div class="state-body" style="font-size:12px">Scan your first QR code to begin — your track will be set automatically.</div>
+</div>
+
+<!-- ── SCREEN: Scanned (progress) ── -->
+<div id="screen-scan">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="card-label" style="margin:0">Your Track</div>
+      <div class="track-badge" id="trackBadge"></div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-count" id="progressCount">0 <span>/ 8</span></div>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="fragments-grid" id="fragmentsGrid"></div>
+  </div>
+
+  <div class="card" id="latestCard">
+    <div class="card-label">Just Found</div>
+    <div class="latest-find">
+      <div class="latest-icon pulse-ring" id="latestIcon">✨</div>
+      <div class="latest-text">
+        <div class="clue-num" id="latestClueNum">Clue #</div>
+        <div class="fragment-word" id="latestWord"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-ghost" onclick="resetProgress()" style="font-size:12px;color:#9aa0a6">
+    ↩ Reset & switch track
+  </button>
+</div>
+
+<!-- ── SCREEN: Wrong track ── -->
+<div id="screen-wrong-track">
+  <div class="card">
+    <div class="state-icon">🚫</div>
+    <div class="state-title">Wrong Track</div>
+    <div class="state-body" style="margin-top:8px">This QR code belongs to a different track. Stick to your own — each track has 8 unique codes.</div>
+  </div>
+  <div class="card" id="wrongTrackInfo"></div>
+  <button class="btn btn-ghost" onclick="goBack()">← Go back to my progress</button>
+</div>
+
+<!-- ── SCREEN: Already scanned ── -->
+<div id="screen-already-scanned">
+  <div class="card">
+    <div class="state-icon">✅</div>
+    <div class="state-title">Already Got This One</div>
+    <div class="state-body" style="margin-top:8px">You've already scanned this QR code. Keep hunting for the ones you're missing!</div>
+  </div>
+  <button class="btn btn-ghost" onclick="goBack()">← Back to my progress</button>
+</div>
+
+<!-- ── SCREEN: Invalid ── -->
+<div id="screen-invalid">
+  <div class="card">
+    <div class="state-icon">❓</div>
+    <div class="state-title">Invalid Code</div>
+    <div class="state-body" style="margin-top:8px">This doesn't look like a valid Side Quest QR code. Try scanning one of the official codes around campus.</div>
+  </div>
+</div>
+
+<!-- ── SCREEN: Complete ── -->
+<div id="screen-complete">
+  <div class="card">
+    <div class="state-icon">🎉</div>
+    <div class="state-title">Quest Complete!</div>
+    <div class="state-body" style="margin-top:4px;margin-bottom:16px">You found all 8 fragments. Head back to the GDGoC booth and show us this screen!</div>
+    <div class="phrase-reveal">
+      <div class="label">Your Secret Phrase</div>
+      <div class="full-phrase" id="completePhrase"></div>
+    </div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">Completed Track</div>
+    <div class="track-badge" id="completeBadge" style="margin:0 auto;display:inline-flex"></div>
+  </div>
+  <button class="btn btn-ghost" onclick="resetProgress()" style="font-size:12px">Start a new quest</button>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CLUE DATABASE
+// Format: token → { track, clue (1-8), word }
+// Replace words with your actual phrase fragments
+// ─────────────────────────────────────────────
+const CLUES = {
+  // Track 1 — Phrase: "knowledge opens every door to endless wonder"
+  "T1_C1_A7x2": { track: 1, clue: 1, word: "knowledge" },
+  "T1_C2_B3m9": { track: 1, clue: 2, word: "opens" },
+  "T1_C3_C8p4": { track: 1, clue: 3, word: "every" },
+  "T1_C4_D2k7": { track: 1, clue: 4, word: "door" },
+  "T1_C5_E5n1": { track: 1, clue: 5, word: "to" },
+  "T1_C6_F9q6": { track: 1, clue: 6, word: "endless" },
+  "T1_C7_G1r3": { track: 1, clue: 7, word: "wonder" },
+  "T1_C8_H4s8": { track: 1, clue: 8, word: "⭐" },
+
+  // Track 2 — Phrase: "build the future one line at a time"
+  "T2_C1_J6t5": { track: 2, clue: 1, word: "build" },
+  "T2_C2_K2u9": { track: 2, clue: 2, word: "the" },
+  "T2_C3_L8v4": { track: 2, clue: 3, word: "future" },
+  "T2_C4_M3w7": { track: 2, clue: 4, word: "one" },
+  "T2_C5_N7x1": { track: 2, clue: 5, word: "line" },
+  "T2_C6_P1y6": { track: 2, clue: 6, word: "at" },
+  "T2_C7_Q5z2": { track: 2, clue: 7, word: "a" },
+  "T2_C8_R9a8": { track: 2, clue: 8, word: "time" },
+
+  // Track 3 — Phrase: "curiosity is the compass of great minds"
+  "T3_C1_S4b3": { track: 3, clue: 1, word: "curiosity" },
+  "T3_C2_T8c7": { track: 3, clue: 2, word: "is" },
+  "T3_C3_U2d5": { track: 3, clue: 3, word: "the" },
+  "T3_C4_V6e9": { track: 3, clue: 4, word: "compass" },
+  "T3_C5_W1f4": { track: 3, clue: 5, word: "of" },
+  "T3_C6_X5g8": { track: 3, clue: 6, word: "great" },
+  "T3_C7_Y9h2": { track: 3, clue: 7, word: "minds" },
+  "T3_C8_Z3i6": { track: 3, clue: 8, word: "⭐" },
+
+  // Track 4 — Phrase: "every expert was once a brave beginner"
+  "T4_C1_A2j7": { track: 4, clue: 1, word: "every" },
+  "T4_C2_B6k1": { track: 4, clue: 2, word: "expert" },
+  "T4_C3_C9l5": { track: 4, clue: 3, word: "was" },
+  "T4_C4_D4m9": { track: 4, clue: 4, word: "once" },
+  "T4_C5_E8n3": { track: 4, clue: 5, word: "a" },
+  "T4_C6_F3o7": { track: 4, clue: 6, word: "brave" },
+  "T4_C7_G7p2": { track: 4, clue: 7, word: "beginner" },
+  "T4_C8_H1q6": { track: 4, clue: 8, word: "⭐" },
+
+  // Track 5 — Phrase: "connect create collaborate and change the world"
+  "T5_C1_J5r4": { track: 5, clue: 1, word: "connect" },
+  "T5_C2_K9s8": { track: 5, clue: 2, word: "create" },
+  "T5_C3_L3t2": { track: 5, clue: 3, word: "collaborate" },
+  "T5_C4_M7u6": { track: 5, clue: 4, word: "and" },
+  "T5_C5_N2v1": { track: 5, clue: 5, word: "change" },
+  "T5_C6_P6w5": { track: 5, clue: 6, word: "the" },
+  "T5_C7_Q1x9": { track: 5, clue: 7, word: "world" },
+  "T5_C8_R4y3": { track: 5, clue: 8, word: "⭐" },
+
+  // Track 6 — Phrase: "data is the new language of the universe"
+  "T6_C1_S8z7": { track: 6, clue: 1, word: "data" },
+  "T6_C2_T2a4": { track: 6, clue: 2, word: "is" },
+  "T6_C3_U6b8": { track: 6, clue: 3, word: "the" },
+  "T6_C4_V1c3": { track: 6, clue: 4, word: "new" },
+  "T6_C5_W5d7": { track: 6, clue: 5, word: "language" },
+  "T6_C6_X9e2": { track: 6, clue: 6, word: "of" },
+  "T6_C7_Y4f6": { track: 6, clue: 7, word: "the" },
+  "T6_C8_Z8g1": { track: 6, clue: 8, word: "universe" },
+};
+
+const TRACK_NAMES = {
+  1: "Track Alpha",
+  2: "Track Beta",
+  3: "Track Gamma",
+  4: "Track Delta",
+  5: "Track Epsilon",
+  6: "Track Zeta",
+};
+
+const TRACK_EMOJIS = { 1:"🔵", 2:"🟢", 3:"🟡", 4:"🔴", 5:"🟣", 6:"🩵" };
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+function getState() {
+  try {
+    return JSON.parse(localStorage.getItem("endoQuest") || "null");
+  } catch { return null; }
+}
+
+function saveState(s) {
+  localStorage.setItem("endoQuest", JSON.stringify(s));
+}
+
+function resetProgress() {
+  localStorage.removeItem("endoQuest");
+  window.location.href = window.location.pathname;
+}
+
+function goBack() {
+  const s = getState();
+  if (!s) { showScreen("screen-welcome"); return; }
+  renderProgress(s, null);
+}
+
+// ─────────────────────────────────────────────
+// SCREENS
+// ─────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('[id^="screen-"]').forEach(el => el.classList.remove("active-screen"));
+  document.getElementById(id).classList.add("active-screen");
+}
+
+// ─────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────
+function renderProgress(state, latestClue) {
+  showScreen("screen-scan");
+
+  const t = state.track;
+  const badge = document.getElementById("trackBadge");
+  badge.className = `track-badge track-${t}`;
+  badge.textContent = `${TRACK_EMOJIS[t]} ${TRACK_NAMES[t]}`;
+
+  const scanned = state.scanned || {};
+  const count = Object.keys(scanned).length;
+
+  document.getElementById("progressCount").innerHTML = `${count} <span>/ 8</span>`;
+  const fill = document.getElementById("progressFill");
+  fill.style.width = `${(count / 8) * 100}%`;
+  fill.className = `progress-bar-fill fill-${t}`;
+
+  // Fragment chips — ordered 1..8
+  const grid = document.getElementById("fragmentsGrid");
+  grid.innerHTML = "";
+  for (let i = 1; i <= 8; i++) {
+    const chip = document.createElement("div");
+    const entry = Object.values(scanned).find(v => v.clue === i);
+    if (entry) {
+      chip.className = "fragment-chip found";
+      chip.textContent = entry.word;
+    } else {
+      chip.className = "fragment-chip empty";
+      chip.textContent = `#${i}`;
+    }
+    grid.appendChild(chip);
+  }
+
+  // Latest find
+  if (latestClue) {
+    const icon = document.getElementById("latestIcon");
+    icon.className = `latest-icon pulse-ring pulse-${t}`;
+    icon.textContent = TRACK_EMOJIS[t];
+    document.getElementById("latestClueNum").textContent = `Clue #${latestClue.clue}`;
+    document.getElementById("latestWord").textContent = latestClue.word;
+    document.getElementById("latestCard").style.display = "block";
+  } else {
+    document.getElementById("latestCard").style.display = "none";
+  }
+}
+
+function renderComplete(state) {
+  showScreen("screen-complete");
+  const t = state.track;
+  const phrase = Object.values(state.scanned)
+    .sort((a, b) => a.clue - b.clue)
+    .map(v => v.word)
+    .join(" ");
+
+  document.getElementById("completePhrase").textContent = phrase;
+  const cb = document.getElementById("completeBadge");
+  cb.className = `track-badge track-${t}`;
+  cb.textContent = `${TRACK_EMOJIS[t]} ${TRACK_NAMES[t]}`;
+
+  spawnConfetti();
+}
+
+// ─────────────────────────────────────────────
+// WELCOME SCREEN
+// ─────────────────────────────────────────────
+function renderWelcome() {
+  showScreen("screen-welcome");
+  const list = document.getElementById("trackList");
+  list.innerHTML = "";
+  for (let i = 1; i <= 6; i++) {
+    const pill = document.createElement("div");
+    pill.className = `track-pill track-badge track-${i}`;
+    pill.textContent = `${TRACK_EMOJIS[i]} ${TRACK_NAMES[i]}`;
+    list.appendChild(pill);
+  }
+}
+
+// ─────────────────────────────────────────────
+// CONFETTI
+// ─────────────────────────────────────────────
+function spawnConfetti() {
+  const wrap = document.getElementById("confettiWrap");
+  const colors = ["#8ab4f8","#81c995","#fdd663","#f28b82","#c58af9","#78d9ec"];
+  for (let i = 0; i < 60; i++) {
+    const dot = document.createElement("div");
+    dot.className = "confetti-dot";
+    dot.style.left = Math.random() * 100 + "vw";
+    dot.style.top = "-20px";
+    dot.style.background = colors[Math.floor(Math.random() * colors.length)];
+    dot.style.animationDuration = (1.5 + Math.random() * 2) + "s";
+    dot.style.animationDelay = (Math.random() * 0.8) + "s";
+    dot.style.width = dot.style.height = (6 + Math.random() * 8) + "px";
+    wrap.appendChild(dot);
+    dot.addEventListener("animationend", () => dot.remove());
+  }
+}
+
+// ─────────────────────────────────────────────
+// MAIN LOGIC
+// ─────────────────────────────────────────────
+function main() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("clue");
+
+  // No token — show welcome or existing progress
+  if (!token) {
+    const state = getState();
+    if (state) {
+      const count = Object.keys(state.scanned || {}).length;
+      if (count >= 8) { renderComplete(state); return; }
+      renderProgress(state, null);
+    } else {
+      renderWelcome();
+    }
+    return;
+  }
+
+  // Validate token
+  const clue = CLUES[token];
+  if (!clue) {
+    showScreen("screen-invalid");
+    return;
+  }
+
+  let state = getState();
+
+  // First scan — set track
+  if (!state) {
+    state = { track: clue.track, scanned: {} };
+  }
+
+  // Wrong track
+  if (state.track !== clue.track) {
+    showScreen("screen-wrong-track");
+    const info = document.getElementById("wrongTrackInfo");
+    info.innerHTML = `
+      <div class="card-label">Your Track</div>
+      <div class="track-badge track-${state.track}">${TRACK_EMOJIS[state.track]} ${TRACK_NAMES[state.track]}</div>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">This code is from <strong style="color:var(--text)">${TRACK_NAMES[clue.track]}</strong>. Find your own track's QR codes.</div>
+    `;
+    return;
+  }
+
+  // Already scanned
+  if (state.scanned[token]) {
+    showScreen("screen-already-scanned");
+    return;
+  }
+
+  // Valid scan — record it
+  state.scanned[token] = { clue: clue.clue, word: clue.word };
+  saveState(state);
+
+  // Clean up URL
+  window.history.replaceState({}, "", window.location.pathname);
+
+  // Check completion
+  if (Object.keys(state.scanned).length >= 8) {
+    renderComplete(state);
+  } else {
+    renderProgress(state, clue);
+  }
+}
+
+main();
+</script>
+</body>
+</html>
