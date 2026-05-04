@@ -1,1349 +1,2598 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Endo's QR Hunt — GDGoC MUD</title>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&family=Google+Sans+Mono&display=swap" rel="stylesheet">
-<style>
-/* ════════════════════════════════════════════════
-   BASE VARIABLES + RESET
-════════════════════════════════════════════════ */
-:root {
-  --bg:#f5f0e8; --paper:#fefcf7; --ink:#1a1a1a; --ink-mid:#555;
-  --border:3px solid #1a1a1a;
-  --shadow:5px 5px 0px #1a1a1a; --shadow-lg:8px 8px 0px #1a1a1a; --shadow-sm:3px 3px 0px #1a1a1a;
-  --gs:'Google Sans','Product Sans',sans-serif;
-  --gm:'Google Sans Mono','Roboto Mono',monospace;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);background-image:radial-gradient(circle,#1a1a1a18 1px,transparent 1px);background-size:26px 26px;color:var(--ink);font-family:var(--gs);min-height:100vh;overflow-x:hidden;}
-
-/* ════════════════════════════════════════════════
-   SCREEN SWITCHING
-════════════════════════════════════════════════ */
-[id^="screen-"]{display:none;min-height:100vh;flex-direction:column;align-items:center;animation:fadeUp 0.3s ease forwards;}
-.active-screen{display:flex!important;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-@keyframes stampIn{from{transform:translateY(-12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-@keyframes slideIn{from{transform:translateX(-12px);opacity:0;}to{transform:translateX(0);opacity:1;}}
-@keyframes cardPop{from{transform:translateY(14px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-
-/* ════════════════════════════════════════════════
-   WELCOME SCREEN
-════════════════════════════════════════════════ */
-#screen-welcome{padding:0;min-height:100vh;display:none;flex-direction:column;}
-.top-bar{display:flex;align-items:center;gap:14px;background:var(--paper);border-bottom:var(--border);padding:15px 20px;width:100%;animation:stampIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both;}
-.gdg-logo{width:5em;height:5em;object-fit:contain;flex-shrink:0;}
-.gdg-text-block{display:flex;flex-direction:column;}
-.gdg-line1{font-family:var(--gs);font-weight:700;font-size:20px;color:var(--ink);line-height:1.1;}
-.gdg-line2{font-family:var(--gs);font-weight:400;font-size:15px;color:#4285F4;line-height:1.2;}
-.top-bar-right{margin-left:auto;font-family:var(--gm);font-size:11px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;}
-.hero-block{background:var(--ink);border-bottom:var(--border);padding:28px 24px;width:100%;display:flex;align-items:center;gap:24px;animation:stampIn 0.5s 0.05s cubic-bezier(0.34,1.56,0.64,1) both;}
-.endo-logo{width:10em;height:10em;object-fit:contain;filter:drop-shadow(0 0 16px #ffffff2a);flex-shrink:0;}
-.hero-text{display:flex;flex-direction:column;}
-.hero-eyebrow{font-family:var(--gm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#666;margin-bottom:6px;}
-.hero-main{font-family:var(--gs);font-weight:700;font-size:clamp(44px,8vw,100px);line-height:1;color:#fff;letter-spacing:-0.5px;text-shadow:black 3px 3px 0px,white 4px 4px 0px;}
-.hero-main .c-blue{color:#4285F4;} .hero-main .c-red{color:#EA4335;} .hero-main .c-green{color:#34A853;} .hero-main .c-yellow{color:#FBBC04;}
-.hero-tagline{font-family:var(--gm);font-size:12px;color:#555;letter-spacing:1px;margin-top:8px;text-transform:uppercase;}
-.howto-strip{width:100%;background:#fef08a;border-bottom:var(--border);padding:13px 32px;display:flex;align-items:center;gap:12px;animation:slideIn 0.4s 0.1s ease both;}
-.howto-strip .hi{font-size:18px;flex-shrink:0;}
-.howto-strip p{font-family:var(--gs);font-size:13px;font-weight:500;line-height:1.5;}
-.howto-strip strong{font-weight:700;}
-.tracks-section{flex:1;width:100%;padding:20px 32px 0;display:flex;flex-direction:column;}
-.section-label{font-family:var(--gm);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink-mid);margin-bottom:14px;}
-.tracks-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;flex:1;padding-bottom:20px;}
-.track-card{background:var(--paper);border:var(--border);box-shadow:var(--shadow);padding:18px 16px;display:flex;flex-direction:column;gap:8px;transition:transform 0.12s ease,box-shadow 0.12s ease;animation:cardPop 0.35s ease both;min-height:200px;}
-.track-card:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 var(--ink);}
-.track-card:nth-child(1){animation-delay:0.08s} .track-card:nth-child(2){animation-delay:0.12s} .track-card:nth-child(3){animation-delay:0.16s}
-.track-card:nth-child(4){animation-delay:0.20s} .track-card:nth-child(5){animation-delay:0.24s}
-.tc-bar{height:7px;border:2px solid var(--ink);border-radius:1px;margin-bottom:2px;}
-.tc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
-.tc-left{display:flex;flex-direction:column;gap:3px;}
-.tc-num{font-family:var(--gm);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-mid);}
-.tc-name{font-family:var(--gs);font-weight:700;font-size:20px;line-height:1;color:var(--ink);}
-.tc-desc{font-family:var(--gs);font-size:12px;color:var(--ink-mid);line-height:1.4;margin-top:2px;}
-.tc-qr{width:64px;height:64px;border:2px solid var(--ink);background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden;}
-.tc-qr::before{content:'';position:absolute;inset:4px;background-image:linear-gradient(var(--ink) 1px,transparent 1px),linear-gradient(90deg,var(--ink) 1px,transparent 1px);background-size:8px 8px;opacity:0.15;}
-.tc-qr-inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:4px;width:100%;height:100%;}
-.qr-cell{border-radius:1px;}
-.tc-qr-label{font-family:var(--gm);font-size:8px;text-align:center;margin-top:3px;letter-spacing:0.5px;}
-.tc-clues{font-family:var(--gm);font-size:10px;color:var(--ink-mid);margin-top:auto;padding-top:10px;border-top:2px dashed #ccc;}
-.footer-bar{width:100%;background:var(--paper);border-top:var(--border);padding:12px 32px;display:flex;align-items:center;gap:10px;}
-.footer-bar span{font-family:var(--gs);font-size:13px;font-weight:500;color:var(--ink-mid);}
-.live-dot{width:10px;height:10px;border-radius:50%;background:#34A853;border:2px solid var(--ink);animation:pulse 1.4s infinite;flex-shrink:0;}
-@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.4);}}
-
-/* ════════════════════════════════════════════════
-   SHARED COMPONENTS (non-welcome screens)
-════════════════════════════════════════════════ */
-#screen-wrong-track,#screen-already-scanned,#screen-invalid{padding:40px 20px 60px;gap:14px;}
-.nb-card{width:100%;max-width:500px;background:var(--paper);border:var(--border);box-shadow:var(--shadow);padding:22px;margin-bottom:14px;}
-.nb-label{font-family:var(--gm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-mid);margin-bottom:12px;}
-.nb-track-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:2px solid var(--ink);font-family:var(--gs);font-weight:700;font-size:13px;box-shadow:var(--shadow-sm);}
-.nb-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;font-family:var(--gs);font-weight:700;font-size:14px;border:var(--border);cursor:pointer;transition:transform 0.1s,box-shadow 0.1s;width:100%;max-width:500px;text-decoration:none;margin-top:0;}
-.nb-btn+.nb-btn{margin-top:10px;}
-.nb-btn:active{transform:translate(3px,3px);box-shadow:none!important;}
-.nb-btn-dark{background:var(--ink);color:#fff;box-shadow:var(--shadow);}
-.nb-btn-ghost{background:var(--paper);color:var(--ink-mid);box-shadow:var(--shadow-sm);font-weight:500;font-size:13px;}
-.big-icon{font-size:56px;text-align:center;margin:10px 0;}
-.big-title{font-family:var(--gs);font-weight:700;font-size:36px;text-align:center;margin-bottom:8px;letter-spacing:-0.5px;}
-.big-body{font-family:var(--gs);font-size:14px;color:var(--ink-mid);text-align:center;line-height:1.65;font-weight:500;}
-.accent-left-red{border-left:6px solid #EA4335;}
-.accent-left-yellow{border-left:6px solid #FBBC04;}
-
-/* ════════════════════════════════════════════════
-   CONFETTI
-════════════════════════════════════════════════ */
-.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden;}
-.cdot{position:absolute;animation:fall linear forwards;border:1.5px solid var(--ink);}
-@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
-
-/* ════════════════════════════════════════════════
-   TRACK 1 — WORD SLIDER
-════════════════════════════════════════════════ */
-#screen-t1{padding:32px 20px 60px;gap:14px;}
-.t1-topbar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;}
-.t1-progress{font-family:var(--gm);font-size:12px;color:var(--ink-mid);}
-.t1-words-collected{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
-.t1-word-chip{padding:6px 14px;background:var(--paper);border:2px solid var(--ink);font-family:var(--gs);font-weight:600;font-size:14px;box-shadow:var(--shadow-sm);}
-.t1-word-chip.collected{background:#4285F4;color:#fff;}
-.t1-word-chip.empty{color:#bbb;border-style:dashed;}
-/* drag puzzle */
-.t1-puzzle-wrap{width:100%;max-width:500px;}
-.t1-puzzle-area{display:flex;flex-wrap:wrap;gap:10px;min-height:60px;padding:14px;background:var(--bg);border:2px dashed var(--ink);margin-bottom:12px;align-content:flex-start;}
-.t1-bank{display:flex;flex-wrap:wrap;gap:10px;padding:14px;background:var(--paper);border:var(--border);box-shadow:var(--shadow-sm);}
-.t1-tile{padding:10px 16px;background:var(--paper);border:2px solid var(--ink);font-family:var(--gs);font-weight:700;font-size:15px;cursor:grab;user-select:none;box-shadow:var(--shadow-sm);transition:transform 0.1s;touch-action:none;}
-.t1-tile:active{cursor:grabbing;transform:scale(1.05);box-shadow:var(--shadow);}
-.t1-tile.in-answer{background:var(--ink);color:#fff;}
-.t1-submit-row{display:flex;gap:10px;width:100%;max-width:500px;}
-
-/* ════════════════════════════════════════════════
-   TRACK 2 — LEXICON
-════════════════════════════════════════════════ */
-#screen-t2{padding:32px 20px 60px;gap:14px;}
-.t2-letters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:4px;}
-.t2-letter-tile{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-family:var(--gs);font-weight:700;font-size:20px;border:var(--border);box-shadow:var(--shadow-sm);}
-.t2-letter-tile.revealed{background:var(--ink);color:#fff;}
-.t2-letter-tile.hidden{background:var(--bg);color:#ccc;border-style:dashed;}
-.t2-input-row{display:flex;gap:10px;width:100%;max-width:500px;}
-.t2-input{flex:1;padding:12px 16px;font-family:var(--gs);font-weight:600;font-size:16px;border:var(--border);background:var(--paper);text-transform:uppercase;box-shadow:var(--shadow-sm) inset;}
-.t2-input:focus{outline:none;box-shadow:0 0 0 3px #4285F433;}
-.t2-words-found{display:flex;flex-wrap:wrap;gap:8px;max-width:500px;}
-.t2-found-chip{padding:5px 12px;font-family:var(--gm);font-size:13px;border:2px solid var(--ink);background:var(--paper);}
-.t2-found-chip.good{background:#34A853;color:#fff;border-color:#34A853;}
-.t2-score-bar{width:100%;max-width:500px;height:16px;background:var(--bg);border:2px solid var(--ink);overflow:hidden;}
-.t2-score-fill{height:100%;background:#34A853;transition:width 0.4s;}
-
-/* ════════════════════════════════════════════════
-   TRACK 3 — SPACE / AMONG US
-════════════════════════════════════════════════ */
-#screen-t3{padding:0;background:#0a0a1a;background-image:radial-gradient(ellipse at 20% 50%,#1a1a4e44 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,#0d2a1a33 0%,transparent 50%);min-height:100vh;}
-.stars-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle linear infinite;}
-@keyframes twinkle{0%,100%{opacity:0.2;}50%{opacity:1;}}
-.t3-content{position:relative;z-index:1;width:100%;max-width:500px;padding:28px 20px 60px;display:flex;flex-direction:column;gap:16px;align-items:center;}
-.t3-header{text-align:center;width:100%;}
-.t3-ship{font-size:48px;display:block;margin-bottom:4px;animation:float 3s ease-in-out infinite;}
-@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-.t3-title{font-family:var(--gs);font-weight:700;font-size:26px;color:#7dd3fc;letter-spacing:1px;text-shadow:0 0 20px #7dd3fc66;}
-.t3-subtitle{font-family:var(--gm);font-size:11px;color:#475569;letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
-/* task card */
-.t3-task-card{width:100%;background:#0f172a;border:2px solid #1e293b;border-radius:4px;padding:20px;box-shadow:0 0 30px #7dd3fc11;}
-.t3-task-label{font-family:var(--gm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#475569;margin-bottom:10px;}
-.t3-task-img{width:100%;height:140px;background:#1e293b;border:2px solid #334155;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:40px;position:relative;overflow:hidden;}
-.t3-task-img-placeholder{color:#475569;font-family:var(--gm);font-size:11px;text-align:center;padding:8px;}
-.t3-task-desc{font-family:var(--gs);font-size:13px;color:#94a3b8;line-height:1.55;}
-.t3-task-name{font-family:var(--gs);font-weight:700;font-size:17px;color:#e2e8f0;margin-bottom:6px;}
-/* task list */
-.t3-task-list{width:100%;background:#0f172a;border:2px solid #1e293b;border-radius:4px;padding:16px;}
-.t3-task-list-title{font-family:var(--gm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#475569;margin-bottom:12px;}
-.t3-task-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:4px;margin-bottom:6px;transition:all 0.4s;}
-.t3-task-item.done{background:#052e16aa;}
-.t3-task-item.pending{background:#1e293b55;}
-.t3-task-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2px solid;}
-.t3-task-item.done .t3-task-dot{background:#22c55e;border-color:#22c55e;box-shadow:0 0 8px #22c55e66;}
-.t3-task-item.pending .t3-task-dot{background:transparent;border-color:#334155;}
-.t3-task-item-name{font-family:var(--gs);font-size:13px;font-weight:500;}
-.t3-task-item.done .t3-task-item-name{color:#86efac;}
-.t3-task-item.pending .t3-task-item-name{color:#475569;}
-.t3-progress-text{font-family:var(--gm);font-size:11px;color:#7dd3fc;text-align:center;letter-spacing:1px;}
-.t3-complete-banner{background:#052e16;border:2px solid #22c55e;border-radius:4px;padding:20px;text-align:center;box-shadow:0 0 30px #22c55e33;}
-.t3-complete-banner .t3-title{color:#22c55e;}
-
-/* ════════════════════════════════════════════════
-   TRACK 4 — WORDLE
-════════════════════════════════════════════════ */
-#screen-t4{padding:32px 20px 60px;gap:14px;}
-.t4-topbar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;}
-.t4-quest-label{font-family:var(--gm);font-size:11px;color:var(--ink-mid);letter-spacing:1px;}
-.wordle-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
-.wordle-row{display:flex;gap:6px;}
-.wordle-cell{width:52px;height:52px;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--gs);font-weight:700;font-size:20px;text-transform:uppercase;transition:all 0.3s;background:var(--paper);}
-.wordle-cell.correct{background:#34A853;color:#fff;border-color:#34A853;}
-.wordle-cell.present{background:#FBBC04;color:#fff;border-color:#FBBC04;}
-.wordle-cell.absent{background:#555;color:#fff;border-color:#555;}
-.wordle-cell.active{border-color:#4285F4;background:#d2e3fc;}
-.wordle-keyboard{display:flex;flex-direction:column;gap:6px;width:100%;max-width:500px;}
-.wordle-key-row{display:flex;gap:5px;justify-content:center;}
-.w-key{padding:12px 8px;min-width:32px;background:var(--paper);border:2px solid var(--ink);font-family:var(--gs);font-weight:700;font-size:13px;cursor:pointer;text-transform:uppercase;box-shadow:var(--shadow-sm);transition:all 0.15s;text-align:center;}
-.w-key:active{transform:translate(2px,2px);box-shadow:none;}
-.w-key.wide{min-width:52px;font-size:11px;}
-.w-key.correct{background:#34A853;color:#fff;border-color:#34A853;}
-.w-key.present{background:#FBBC04;color:#fff;border-color:#FBBC04;}
-.w-key.absent{background:#555;color:#fff;border-color:#555;}
-.t4-message{font-family:var(--gs);font-weight:600;font-size:14px;text-align:center;padding:8px 16px;border:2px solid var(--ink);}
-.t4-message.success{background:#ceead6;border-color:#34A853;}
-.t4-message.fail{background:#fad2cf;border-color:#EA4335;}
-.t4-progress-dots{display:flex;gap:8px;justify-content:center;}
-.t4-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);}
-.t4-dot.done{background:#34A853;}
-.t4-dot.current{background:#FBBC04;animation:pulse 1s infinite;}
-.t4-dot.pending{background:transparent;}
-
-/* ════════════════════════════════════════════════
-   TRACK 5 — SLIDING PUZZLE
-════════════════════════════════════════════════ */
-#screen-t5{padding:32px 20px 60px;gap:14px;}
-.t5-topbar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;}
-.t5-collection{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:500px;}
-.t5-piece-thumb{width:48px;height:48px;border:2px solid var(--ink);object-fit:cover;transition:all 0.3s;}
-.t5-piece-thumb.locked{background:var(--bg);border-style:dashed;display:flex;align-items:center;justify-content:center;font-size:18px;color:#ccc;}
-.puzzle-container{width:100%;max-width:360px;aspect-ratio:1;position:relative;}
-.puzzle-grid{display:grid;gap:3px;width:100%;height:100%;}
-.puzzle-tile{background:var(--paper);border:2px solid var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--gs);font-weight:700;font-size:18px;transition:all 0.15s;overflow:hidden;position:relative;}
-.puzzle-tile:active{transform:scale(0.95);}
-.puzzle-tile.empty{background:var(--bg);border-style:dashed;border-color:#ccc;cursor:default;}
-.puzzle-tile img{width:100%;height:100%;object-fit:cover;display:block;}
-.puzzle-tile.locked-tile{background:#e0e0e0;border-color:#ccc;cursor:not-allowed;}
-.puzzle-tile.locked-tile::after{content:'🔒';position:absolute;font-size:20px;}
-.t5-solve-btn{font-family:var(--gs);}
-
-/* ════════════════════════════════════════════════
-   TRACK 6 — RICKROLL (fake loading screen)
-════════════════════════════════════════════════ */
-#screen-t6{padding:40px 20px 60px;gap:14px;background:var(--paper);}
-.t6-fake-title{font-family:var(--gs);font-weight:700;font-size:28px;text-align:center;}
-.t6-fake-bar{width:100%;max-width:400px;height:20px;background:var(--bg);border:var(--border);overflow:hidden;margin:8px 0;}
-.t6-fake-fill{height:100%;background:#4285F4;animation:fakeFill 2.5s ease forwards;}
-@keyframes fakeFill{0%{width:0%;}70%{width:85%;}100%{width:100%;}}
-.t6-fake-status{font-family:var(--gm);font-size:11px;color:var(--ink-mid);text-align:center;letter-spacing:1px;}
-
-/* ════════════════════════════════════════════════
-   COMPLETE SCREEN (generic + per-track)
-════════════════════════════════════════════════ */
-#screen-complete{padding:32px 20px 60px;gap:14px;}
-.phrase-box{width:100%;max-width:500px;background:var(--ink);color:#fff;border:var(--border);box-shadow:var(--shadow-lg);padding:24px;text-align:center;margin-bottom:0;}
-.phrase-box .plabel{font-family:var(--gm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#666;margin-bottom:10px;}
-.phrase-box .phrase-text{font-family:var(--gs);font-weight:700;font-size:28px;line-height:1.25;word-break:break-word;}
-</style>
-</head>
-<body>
-<div class="confetti-wrap" id="confettiWrap"></div>
-
-<!-- ════════════════════════
-     WELCOME / LANDING
-════════════════════════ -->
-<div id="screen-welcome">
-  <div class="top-bar">
-    <img src="dark.png" class="gdg-logo" alt="GDGoC" onerror="this.style.display='none'">
-    <div class="gdg-text-block">
-      <span class="gdg-line1">Google Developer Group</span>
-      <span class="gdg-line2">On Campus Murdoch University Dubai</span>
-    </div>
-    <div class="top-bar-right">Welcome Week 2025</div>
-  </div>
-  <div class="hero-block">
-    <img src="endo.png" class="endo-logo" alt="Endo" onerror="this.style.display='none'">
-    <div class="hero-text">
-      <div class="hero-eyebrow">Find the fragments · Complete the challenge · Claim your prize</div>
-      <div class="hero-main">ENDO'S&nbsp;<span class="c-blue">Q</span><span class="c-red">R</span>&nbsp;<span class="c-green">H</span><span class="c-yellow">U</span>NT</div>
-      <div class="hero-tagline">5 unique pathways · scan QR codes · win prizes</div>
-    </div>
-  </div>
-  <div class="howto-strip">
-    <div class="hi">📋</div>
-    <p><strong>How it works:</strong> Pick a pathway, grab a starting QR from the booth, hunt around campus — each pathway has its own unique challenge. Complete it and show us to claim your prize!</p>
-  </div>
-  <div class="tracks-section">
-    <div class="section-label">— Choose your pathway —</div>
-    <div class="tracks-grid" id="trackGrid"></div>
-  </div>
-  <div class="footer-bar">
-    <div class="live-dot"></div>
-    <span>Starting QR codes are at the booth. Pick a path and go!</span>
-  </div>
-</div>
-
-<!-- ════════════════════════
-     WRONG TRACK
-════════════════════════ -->
-<div id="screen-wrong-track">
-  <div class="nb-card accent-left-red" style="max-width:500px;margin-top:40px">
-    <div class="big-icon">🚫</div>
-    <div class="big-title">Wrong Pathway!</div>
-    <div class="big-body" id="wrongBody">This QR belongs to a different pathway.</div>
-  </div>
-  <button class="nb-btn nb-btn-ghost" onclick="goBack()">← Back to my progress</button>
-</div>
-
-<!-- ════════════════════════
-     ALREADY SCANNED
-════════════════════════ -->
-<div id="screen-already-scanned">
-  <div class="nb-card accent-left-yellow" style="max-width:500px;margin-top:40px">
-    <div class="big-icon">✅</div>
-    <div class="big-title">Already Got This!</div>
-    <div class="big-body">You've scanned this one. Keep hunting!</div>
-  </div>
-  <button class="nb-btn nb-btn-ghost" onclick="goBack()">← Back to my progress</button>
-</div>
-
-<!-- ════════════════════════
-     INVALID
-════════════════════════ -->
-<div id="screen-invalid">
-  <div class="nb-card" style="max-width:500px;margin-top:40px">
-    <div class="big-icon">❓</div>
-    <div class="big-title">Invalid Code</div>
-    <div class="big-body">This doesn't look like an official QR Hunt code.</div>
-  </div>
-</div>
-
-<!-- ════════════════════════
-     COMPLETE
-════════════════════════ -->
-<div id="screen-complete">
-  <div class="nb-card" style="max-width:500px;text-align:center">
-    <img src="endo.png" style="height:72px;object-fit:contain;margin:0 auto 8px;display:block" alt="Endo" onerror="this.style.display='none'">
-    <div class="big-title" style="font-size:40px">Quest Complete!</div>
-    <div class="big-body">Head to the GDGoC booth and show us this screen to claim your prize 🎉</div>
-  </div>
-  <div class="phrase-box">
-    <div class="plabel" id="completePhraseLabel">Your Result</div>
-    <div class="phrase-text" id="completePhrase"></div>
-  </div>
-  <div class="nb-card" style="max-width:500px;display:flex;align-items:center;justify-content:space-between">
-    <div class="nb-label" style="margin:0">Completed Pathway</div>
-    <div class="nb-track-badge" id="completeBadge"></div>
-  </div>
-  <button class="nb-btn nb-btn-ghost" onclick="resetProgress()">Start a new quest</button>
-</div>
-
-<!-- ════════════════════════════════════════
-     TRACK 1 — CIPHER (Word Slider)
-════════════════════════════════════════ -->
-<div id="screen-t1">
-  <div class="t1-topbar">
-    <img src="endo.png" style="height:32px;object-fit:contain" alt="Endo" onerror="this.style.display='none'">
-    <div class="nb-track-badge" id="t1Badge"></div>
-  </div>
-  <div class="nb-card" style="max-width:500px">
-    <div class="nb-label">Words Collected</div>
-    <div class="t1-words-collected" id="t1WordChips"></div>
-    <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid)" id="t1Status"></div>
-  </div>
-
-  <!-- Puzzle (shown after all 8 collected) -->
-  <div id="t1PuzzleSection" style="display:none;width:100%;max-width:500px;display:none;flex-direction:column;gap:14px;align-items:center">
-    <div class="nb-card" style="max-width:500px;width:100%">
-      <div class="nb-label">Arrange into the correct sentence</div>
-      <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid);margin-bottom:10px">Tap a word to add it to your answer. Tap again to remove.</div>
-      <div style="font-family:var(--gs);font-size:11px;font-weight:600;color:var(--ink-mid);margin-bottom:6px">YOUR ANSWER:</div>
-      <div class="t1-puzzle-area" id="t1AnswerArea"></div>
-      <div style="font-family:var(--gs);font-size:11px;font-weight:600;color:var(--ink-mid);margin-bottom:6px">WORD BANK:</div>
-      <div class="t1-bank" id="t1Bank"></div>
-    </div>
-    <div id="t1Feedback" style="display:none" class="t4-message"></div>
-    <button class="nb-btn nb-btn-dark" onclick="checkT1Answer()">✓ Submit Sentence</button>
-    <button class="nb-btn nb-btn-ghost" onclick="resetT1Puzzle()">↺ Clear &amp; Reset</button>
-  </div>
-
-  <button class="nb-btn nb-btn-ghost" style="max-width:500px" onclick="resetProgress()">↩ Switch pathway</button>
-</div>
-
-<!-- ════════════════════════════════════════
-     TRACK 2 — LEXICON (Letter Words)
-════════════════════════════════════════ -->
-<div id="screen-t2">
-  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;margin-bottom:14px">
-    <img src="endo.png" style="height:32px;object-fit:contain" alt="Endo" onerror="this.style.display='none'">
-    <div class="nb-track-badge" id="t2Badge"></div>
-  </div>
-  <div class="nb-card" style="max-width:500px">
-    <div class="nb-label">Your Letters</div>
-    <div class="t2-letters" id="t2Letters"></div>
-    <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid);margin-top:8px" id="t2Status"></div>
-  </div>
-  <div class="nb-card" id="t2InputCard" style="max-width:500px;display:none">
-    <div class="nb-label">Make Words</div>
-    <div style="font-family:var(--gs);font-size:13px;color:var(--ink-mid);margin-bottom:12px">Use only your 8 letters. Find as many valid words as possible (min 3 letters).</div>
-    <div class="t2-score-bar" style="margin-bottom:8px"><div class="t2-score-fill" id="t2ScoreFill" style="width:0%"></div></div>
-    <div style="font-family:var(--gm);font-size:11px;color:var(--ink-mid);margin-bottom:12px" id="t2ScoreLabel">0 / 5 words found</div>
-    <div class="t2-input-row" style="margin-bottom:12px">
-      <input class="t2-input" id="t2Input" placeholder="TYPE A WORD" maxlength="8" oninput="this.value=this.value.toUpperCase()">
-      <button class="nb-btn nb-btn-dark" style="width:auto;padding:12px 18px" onclick="submitT2Word()">+</button>
-    </div>
-    <div class="t2-words-found" id="t2WordsFound"></div>
-  </div>
-  <button id="t2SubmitFinal" class="nb-btn nb-btn-dark" style="max-width:500px;display:none" onclick="finishT2()">✓ I'm Done — Check My Score</button>
-  <button class="nb-btn nb-btn-ghost" style="max-width:500px" onclick="resetProgress()">↩ Switch pathway</button>
-</div>
-
-<!-- ════════════════════════════════════════
-     TRACK 3 — SPACE / AMONG US
-════════════════════════════════════════ -->
-<div id="screen-t3">
-  <div class="stars-bg" id="starsBg"></div>
-  <div class="t3-content">
-    <div class="t3-header">
-      <span class="t3-ship">🚀</span>
-      <div class="t3-title">ENDO STATION</div>
-      <div class="t3-subtitle">Emergency Task Protocol · Active</div>
-    </div>
-
-    <!-- Latest task scanned -->
-    <div class="t3-task-card" id="t3TaskCard">
-      <div class="t3-task-label">Task Completed</div>
-      <div class="t3-task-name" id="t3TaskName">—</div>
-      <div class="t3-task-img" id="t3TaskImg">
-        <div class="t3-task-img-placeholder">[ Task location photo placeholder ]</div>
-      </div>
-      <div class="t3-task-desc" id="t3TaskDesc">Scan your first QR code to begin your mission, crewmate.</div>
-    </div>
-
-    <!-- Progress label -->
-    <div class="t3-progress-text" id="t3ProgressText">0 / 8 TASKS COMPLETE</div>
-
-    <!-- Task manifest -->
-    <div class="t3-task-list">
-      <div class="t3-task-list-title">📋 Task Manifest — Endo Station</div>
-      <div id="t3TaskList"></div>
-    </div>
-
-    <!-- Complete banner (hidden until done) -->
-    <div class="t3-complete-banner" id="t3CompleteBanner" style="display:none;width:100%">
-      <div style="font-size:40px;margin-bottom:8px">✅</div>
-      <div class="t3-title">All Tasks Complete!</div>
-      <div style="font-family:var(--gs);font-size:13px;color:#86efac;margin-top:8px">Head to the GDGoC booth and show this screen to the crew!</div>
-    </div>
-
-    <button class="nb-btn nb-btn-ghost" style="background:#0f172a;color:#475569;border-color:#1e293b;box-shadow:none" onclick="resetProgress()">↩ Switch pathway</button>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     TRACK 4 — WORDLE
-════════════════════════════════════════ -->
-<div id="screen-t4">
-  <div class="t4-topbar">
-    <img src="endo.png" style="height:32px;object-fit:contain" alt="Endo" onerror="this.style.display='none'">
-    <div class="nb-track-badge" id="t4Badge"></div>
-  </div>
-  <div class="nb-card" style="max-width:500px">
-    <div class="nb-label" id="t4WordleLabel">Wordle #1 of 8</div>
-    <div style="font-family:var(--gs);font-size:13px;color:var(--ink-mid);margin-bottom:12px" id="t4WordleHint"></div>
-    <div class="wordle-grid" id="wordleGrid"></div>
-    <div id="t4Message" class="t4-message" style="display:none;margin-top:10px"></div>
-  </div>
-  <div class="wordle-keyboard" id="wordleKeyboard"></div>
-  <div class="t4-progress-dots" id="t4Dots"></div>
-  <button class="nb-btn nb-btn-ghost" style="max-width:500px" onclick="resetProgress()">↩ Switch pathway</button>
-</div>
-
-<!-- ════════════════════════════════════════
-     TRACK 5 — SLIDING PUZZLE
-════════════════════════════════════════ -->
-<div id="screen-t5">
-  <div class="t5-topbar">
-    <img src="endo.png" style="height:32px;object-fit:contain" alt="Endo" onerror="this.style.display='none'">
-    <div class="nb-track-badge" id="t5Badge"></div>
-  </div>
-  <div class="nb-card" style="max-width:500px">
-    <div class="nb-label" id="t5CollectedLabel">Pieces Collected: 0 / 8</div>
-    <div class="t5-collection" id="t5Collection"></div>
-    <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid);margin-top:10px" id="t5Status">Collect all 8 pieces to unlock the puzzle.</div>
-  </div>
-  <div id="t5PuzzleSection" style="display:none;width:100%;max-width:500px;flex-direction:column;gap:14px;align-items:center">
-    <div class="nb-card" style="max-width:500px;width:100%;text-align:center">
-      <div class="nb-label">Slide tiles to complete the image</div>
-      <div class="puzzle-container" id="puzzleContainer">
-        <div class="puzzle-grid" id="puzzleGrid" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)"></div>
-      </div>
-    </div>
-    <div id="t5Message" class="t4-message" style="display:none;max-width:500px;width:100%"></div>
-    <button class="nb-btn nb-btn-ghost t5-solve-btn" style="max-width:500px" onclick="shufflePuzzle()">🔀 Shuffle</button>
-  </div>
-  <button class="nb-btn nb-btn-ghost" style="max-width:500px" onclick="resetProgress()">↩ Switch pathway</button>
-</div>
-
-<!-- ════════════════════════════════════════
-     TRACK 6 — RICKROLL
-════════════════════════════════════════ -->
-<div id="screen-t6">
-  <div class="nb-card" style="max-width:500px;text-align:center;margin-top:40px">
-    <div style="font-size:48px;margin-bottom:12px">⚡</div>
-    <div class="t6-fake-title">Sigma Productivity Quest</div>
-    <div style="font-family:var(--gm);font-size:11px;color:var(--ink-mid);margin:8px 0;letter-spacing:1px">INITIALISING HYPER-OPTIMISATION PROTOCOL...</div>
-    <div class="t6-fake-bar"><div class="t6-fake-fill" id="t6Fill"></div></div>
-    <div class="t6-fake-status" id="t6Status">Calibrating sigma frequencies...</div>
-  </div>
-</div>
-
-<script>
-/* ════════════════════════════════════════════════════════════
-   DATA — CLUES + TRACK DEFINITIONS
-════════════════════════════════════════════════════════════ */
-
-// TRACK 1 — Cipher (word slider)
-// Sentence: "technology connects us and builds a better world"
-const T1_SENTENCE = ["technology","connects","us","and","builds","a","better","world"];
-const T1_CLUES = {
-  "T1_C1_A7x2":{ track:1,clue:1,word:"technology" },
-  "T1_C2_B3m9":{ track:1,clue:2,word:"connects" },
-  "T1_C3_C8p4":{ track:1,clue:3,word:"us" },
-  "T1_C4_D2k7":{ track:1,clue:4,word:"and" },
-  "T1_C5_E5n1":{ track:1,clue:5,word:"builds" },
-  "T1_C6_F9q6":{ track:1,clue:6,word:"a" },
-  "T1_C7_G1r3":{ track:1,clue:7,word:"better" },
-  "T1_C8_H4s8":{ track:1,clue:8,word:"world" },
-};
-
-// TRACK 2 — Lexicon (letter words)
-// 8 letters: G D G O C M U D → gdgocmud
-const T2_LETTERS = ["G","D","G","O","C","M","U","D"];
-const T2_MIN_WORDS = 5;
-const T2_CLUES = {
-  "T2_C1_J6t5":{ track:2,clue:1,letter:"G" },
-  "T2_C2_K2u9":{ track:2,clue:2,letter:"D" },
-  "T2_C3_L8v4":{ track:2,clue:3,letter:"G" },
-  "T2_C4_M3w7":{ track:2,clue:4,letter:"O" },
-  "T2_C5_N7x1":{ track:2,clue:5,letter:"C" },
-  "T2_C6_P1y6":{ track:2,clue:6,letter:"M" },
-  "T2_C7_Q5z2":{ track:2,clue:7,letter:"U" },
-  "T2_C8_R9a8":{ track:2,clue:8,letter:"D" },
-};
-
-// TRACK 3 — Space / Among Us
-const T3_TASKS = [
-  { name:"The Stairs", img:"t3_img1.jpg", desc:"You spotted something suspicious near the stairwell. Task logged." },
-  { name:"The Pantry",  img:"t3_img2.jpg", desc:"Snacks secured. The pantry has been checked and cleared." },
-  { name:"The Lobby",  img:"t3_img3.jpg", desc:"All visitors accounted for. Lobby sweep complete." },
-  { name:"The Games Area", img:"t3_img4.jpg", desc:"No impostors hiding behind the foosball table. Area clear." },
-  { name:"The Rest Zone", img:"t3_img5.jpg", desc:"Crewmates resting safely. Rest zone secured." },
-  { name:"The Xbox Station", img:"t3_img6.jpg", desc:"Controller inventory confirmed. Xbox station operational." },
-  { name:"The Jenga Tower", img:"t3_img7.jpg", desc:"Structural integrity assessed. Tower standing — for now." },
-  { name:"The Doors", img:"t3_img8.jpg", desc:"All entry points secured. The impostor cannot escape." },
-];
-const T3_CLUES = {
-  "T3_C1_S4b3":{ track:3,clue:1 },
-  "T3_C2_T8c7":{ track:3,clue:2 },
-  "T3_C3_U2d5":{ track:3,clue:3 },
-  "T3_C4_V6e9":{ track:3,clue:4 },
-  "T3_C5_W1f4":{ track:3,clue:5 },
-  "T3_C6_X5g8":{ track:3,clue:6 },
-  "T3_C7_Y9h2":{ track:3,clue:7 },
-  "T3_C8_Z3i6":{ track:3,clue:8 },
-};
-
-// TRACK 4 — Wordle (6 letters max, 5-6 letter words)
-const T4_WORDS = ["stairs","pantry","lobby","games","rest","xbox","jenga","doors"];
-const T4_CLUES = {
-  "T4_C1_A2j7":{ track:4,clue:1 },
-  "T4_C2_B6k1":{ track:4,clue:2 },
-  "T4_C3_C9l5":{ track:4,clue:3 },
-  "T4_C4_D4m9":{ track:4,clue:4 },
-  "T4_C5_E8n3":{ track:4,clue:5 },
-  "T4_C6_F3o7":{ track:4,clue:6 },
-  "T4_C7_G7p2":{ track:4,clue:7 },
-  "T4_C8_H1q6":{ track:4,clue:8 },
-};
-
-// TRACK 5 — Sliding Puzzle
-// Images: puzzle_1.jpg ... puzzle_8.jpg (upload alongside index.html)
-const T5_IMAGES = Array.from({length:8},(_,i)=>`puzzle_${i+1}.jpg`);
-const T5_CLUES = {
-  "T5_C1_J5r4":{ track:5,clue:1 },
-  "T5_C2_K9s8":{ track:5,clue:2 },
-  "T5_C3_L3t2":{ track:5,clue:3 },
-  "T5_C4_M7u6":{ track:5,clue:4 },
-  "T5_C5_N2v1":{ track:5,clue:5 },
-  "T5_C6_P6w5":{ track:5,clue:6 },
-  "T5_C7_Q1x9":{ track:5,clue:7 },
-  "T5_C8_R4y3":{ track:5,clue:8 },
-};
-
-// TRACK 6 — Rickroll
-const T6_CLUES = {
-  "T6_C1_S8z7":{ track:6,clue:1 },
-};
-
-// Master lookup
-const ALL_CLUES = {...T1_CLUES,...T2_CLUES,...T3_CLUES,...T4_CLUES,...T5_CLUES,...T6_CLUES};
-
-const TRACKS = {
-  1:{ name:"Cipher",    emoji:"🔡", color:"#4285F4", light:"#d2e3fc", desc:"Collect 8 words, arrange them into the correct sentence." },
-  2:{ name:"Lexicon",   emoji:"🔤", color:"#34A853", light:"#ceead6", desc:"Collect 8 letters, form as many words as you can." },
-  3:{ name:"Crewmate",  emoji:"🚀", color:"#7c3aed", light:"#ede9fe", desc:"Complete 8 space tasks hidden around campus." },
-  4:{ name:"Wordle",    emoji:"🟩", color:"#EA4335", light:"#fad2cf", desc:"Solve a Wordle puzzle at each of 8 locations." },
-  5:{ name:"Mosaic",    emoji:"🖼️", color:"#f59e0b", light:"#fef3c7", desc:"Collect 8 image pieces, solve the sliding puzzle." },
-  6:{ name:"Σ Quest",   emoji:"⚡", color:"#64748b", light:"#f1f5f9", desc:"The easiest quest. Guaranteed productivity gains." },
-};
-
-const QR_PATTERNS=[[0,2,4,6,8,1,5],[0,1,2,6,7,8,4],[0,2,3,5,6,8,1],[0,1,3,4,6,7,8],[0,2,4,5,7,8,3]];
-
-/* ════════════════════════════════════════════════════════════
-   STATE
-════════════════════════════════════════════════════════════ */
-const getState=()=>{try{return JSON.parse(localStorage.getItem("endoQuest")||"null");}catch{return null;}};
-const saveState=s=>localStorage.setItem("endoQuest",JSON.stringify(s));
-function resetProgress(){localStorage.removeItem("endoQuest");window.location.href=window.location.pathname;}
-function goBack(){
-  const s=getState();
-  if(!s){showWelcome();return;}
-  routeToTrack(s);
-}
-function showScreen(id){
-  document.querySelectorAll('[id^="screen-"]').forEach(el=>el.classList.remove("active-screen"));
-  document.getElementById(id).classList.add("active-screen");
-}
-
-/* ════════════════════════════════════════════════════════════
-   WELCOME
-════════════════════════════════════════════════════════════ */
-function showWelcome(){
-  showScreen("screen-welcome");
-  const grid=document.getElementById("trackGrid");
-  grid.innerHTML="";
-  Object.entries(TRACKS).forEach(([n,t])=>{
-    const pat=QR_PATTERNS[(parseInt(n)-1)%QR_PATTERNS.length];
-    const cells=Array.from({length:9},(_,i)=>{
-      const f=pat.includes(i);
-      return `<div class="qr-cell" style="background:${f?t.color:'transparent'};border:1px solid ${f?t.color:'#ddd'}"></div>`;
-    }).join('');
-    const c=document.createElement("div");
-    c.className="track-card";
-    c.innerHTML=`
-      <div class="tc-bar" style="background:${t.color}"></div>
-      <div class="tc-header">
-        <div class="tc-left">
-          <div class="tc-num">PATHWAY ${n}</div>
-          <div class="tc-name">${t.emoji} ${t.name}</div>
-          <div class="tc-desc">${t.desc}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center">
-          <div class="tc-qr" style="border-color:${t.color}"><div class="tc-qr-inner">${cells}</div></div>
-          <div class="tc-qr-label" style="color:${t.color}">SCAN TO START</div>
-        </div>
-      </div>
-      <div class="tc-clues">8 QR codes · ${n==='6'?'just one scan tbh':'find them all around campus'}</div>
-    `;
-    grid.appendChild(c);
-  });
-}
-
-/* ════════════════════════════════════════════════════════════
-   ROUTER — decides which track screen to show
-════════════════════════════════════════════════════════════ */
-function routeToTrack(state){
-  switch(state.track){
-    case 1: renderT1(state); break;
-    case 2: renderT2(state); break;
-    case 3: renderT3(state); break;
-    case 4: renderT4(state); break;
-    case 5: renderT5(state); break;
-    case 6: renderT6(); break;
-  }
-}
-
-/* ════════════════════════════════════════════════════════════
-   TRACK 1 — CIPHER (Word Slider)
-════════════════════════════════════════════════════════════ */
-let t1Answer=[], t1Bank=[];
-
-function renderT1(state){
-  showScreen("screen-t1");
-  const t=TRACKS[1];
-  document.getElementById("t1Badge").style.cssText=`background:${t.light};border-color:${t.color}`;
-  document.getElementById("t1Badge").textContent=`${t.emoji} ${t.name}`;
-
-  const scanned=state.scanned||{};
-  const count=Object.keys(scanned).length;
-  const collectedWords=Array.from({length:8},(_,i)=>{
-    const e=Object.values(scanned).find(v=>v.clue===i+1);
-    return e?e.word:null;
-  });
-
-  const chips=document.getElementById("t1WordChips");
-  chips.innerHTML="";
-  collectedWords.forEach((w,i)=>{
-    const ch=document.createElement("div");
-    ch.className=`t1-word-chip ${w?'collected':'empty'}`;
-    ch.textContent=w||`#${i+1}`;
-    if(w) ch.style.background="#4285F4",ch.style.color="#fff";
-    chips.appendChild(ch);
-  });
-
-  const status=document.getElementById("t1Status");
-  if(count<8){
-    status.textContent=`${count}/8 words collected — keep scanning!`;
-    document.getElementById("t1PuzzleSection").style.display="none";
-  } else {
-    status.textContent="All 8 words collected! Arrange them below.";
-    document.getElementById("t1PuzzleSection").style.display="flex";
-    initT1Puzzle(collectedWords.filter(Boolean));
-  }
-}
-
-function initT1Puzzle(words){
-  t1Answer=[];
-  t1Bank=[...words].sort(()=>Math.random()-0.5);
-  renderT1Puzzle();
-}
-
-function renderT1Puzzle(){
-  const answerArea=document.getElementById("t1AnswerArea");
-  const bank=document.getElementById("t1Bank");
-  answerArea.innerHTML="";
-  bank.innerHTML="";
-  t1Answer.forEach((w,i)=>{
-    const tile=document.createElement("div");
-    tile.className="t1-tile in-answer";
-    tile.textContent=w;
-    tile.onclick=()=>{ t1Bank.push(w); t1Answer.splice(i,1); renderT1Puzzle(); };
-    answerArea.appendChild(tile);
-  });
-  t1Bank.forEach((w,i)=>{
-    const tile=document.createElement("div");
-    tile.className="t1-tile";
-    tile.textContent=w;
-    tile.onclick=()=>{ t1Answer.push(w); t1Bank.splice(i,1); renderT1Puzzle(); };
-    bank.appendChild(tile);
-  });
-}
-
-function resetT1Puzzle(){
-  const s=getState();
-  const scanned=s.scanned||{};
-  const words=Array.from({length:8},(_,i)=>{const e=Object.values(scanned).find(v=>v.clue===i+1);return e?e.word:null;}).filter(Boolean);
-  initT1Puzzle(words);
-  document.getElementById("t1Feedback").style.display="none";
-}
-
-function checkT1Answer(){
-  const feedback=document.getElementById("t1Feedback");
-  if(t1Answer.length!==8){
-    feedback.style.display="block";
-    feedback.className="t4-message fail";
-    feedback.textContent="Arrange all 8 words first!";
-    return;
-  }
-  const correct=T1_SENTENCE.join(" ");
-  const attempt=t1Answer.join(" ");
-  feedback.style.display="block";
-  if(attempt.toLowerCase()===correct.toLowerCase()){
-    feedback.className="t4-message success";
-    feedback.textContent="✅ Correct! Head to the booth!";
-    const s=getState(); s.completed=true; s.result=attempt; saveState(s);
-    setTimeout(()=>showComplete(s,`"${attempt}"`),1500);
-  } else {
-    feedback.className="t4-message fail";
-    feedback.textContent="❌ Not quite — try a different order!";
-  }
-}
-
-/* ════════════════════════════════════════════════════════════
-   TRACK 2 — LEXICON
-════════════════════════════════════════════════════════════ */
-// Simple valid word check: must use only available letters, min 3 chars
-function isValidT2Word(word, availableLetters){
-  const pool=[...availableLetters];
-  for(const ch of word.toUpperCase()){
-    const idx=pool.indexOf(ch);
-    if(idx===-1) return false;
-    pool.splice(idx,1);
-  }
-  return word.length>=3;
-}
-
-// Minimal common English words as a check set for GDGOCMUD letters
-// Real validation: just checks letter availability + length
-function renderT2(state){
-  showScreen("screen-t2");
-  const t=TRACKS[2];
-  document.getElementById("t2Badge").style.cssText=`background:${t.light};border-color:${t.color}`;
-  document.getElementById("t2Badge").textContent=`${t.emoji} ${t.name}`;
-
-  const scanned=state.scanned||{};
-  const count=Object.keys(scanned).length;
-  const collectedLetters=Array.from({length:8},(_,i)=>{
-    const e=Object.values(scanned).find(v=>v.clue===i+1);
-    return e?e.letter:null;
-  });
-
-  const lettersDiv=document.getElementById("t2Letters");
-  lettersDiv.innerHTML="";
-  collectedLetters.forEach((l,i)=>{
-    const tile=document.createElement("div");
-    tile.className=`t2-letter-tile ${l?'revealed':'hidden'}`;
-    tile.style.background=l?"#34A853":"";
-    tile.style.color=l?"#fff":"#ccc";
-    tile.textContent=l||"?";
-    lettersDiv.appendChild(tile);
-  });
-
-  const status=document.getElementById("t2Status");
-  const inputCard=document.getElementById("t2InputCard");
-  const submitFinal=document.getElementById("t2SubmitFinal");
-  if(count<8){
-    status.textContent=`${count}/8 letters collected — keep scanning!`;
-    inputCard.style.display="none";
-    submitFinal.style.display="none";
-  } else {
-    status.textContent="All 8 letters collected! Make as many words as you can.";
-    inputCard.style.display="block";
-    submitFinal.style.display="flex";
-    // restore found words
-    const found=state.t2words||[];
-    renderT2Words(found, collectedLetters.filter(Boolean));
-  }
-}
-
-function renderT2Words(found, letters){
-  const div=document.getElementById("t2WordsFound");
-  div.innerHTML="";
-  found.forEach(w=>{
-    const chip=document.createElement("div");
-    chip.className="t2-found-chip good";
-    chip.textContent=w;
-    div.appendChild(chip);
-  });
-  const pct=Math.min(100,(found.length/T2_MIN_WORDS)*100);
-  document.getElementById("t2ScoreFill").style.width=pct+"%";
-  document.getElementById("t2ScoreLabel").textContent=`${found.length} / ${T2_MIN_WORDS} words to win`;
-}
-
-function submitT2Word(){
-  const input=document.getElementById("t2Input");
-  const word=input.value.trim().toUpperCase();
-  if(!word){return;}
-  const s=getState();
-  const scanned=s.scanned||{};
-  const letters=Array.from({length:8},(_,i)=>{const e=Object.values(scanned).find(v=>v.clue===i+1);return e?e.letter:null;}).filter(Boolean);
-  const found=s.t2words||[];
-  if(found.includes(word)){
-    showT2Error("Already found that one!"); input.value=""; return;
-  }
-  if(!isValidT2Word(word,letters)){
-    showT2Error("Invalid — use only your 8 letters!"); input.value=""; return;
-  }
-  found.push(word);
-  s.t2words=found;
-  saveState(s);
-  renderT2Words(found,letters);
-  input.value="";
-}
-
-function showT2Error(msg){
-  const div=document.getElementById("t2WordsFound");
-  const err=document.createElement("div");
-  err.className="t2-found-chip";
-  err.style.cssText="color:#EA4335;border-color:#EA4335";
-  err.textContent=msg;
-  div.prepend(err);
-  setTimeout(()=>err.remove(),2000);
-}
-
-function finishT2(){
-  const s=getState();
-  const found=s.t2words||[];
-  if(found.length>=T2_MIN_WORDS){
-    s.completed=true; s.result=`${found.length} words: ${found.join(", ")}`;
-    saveState(s);
-    showComplete(s,`${found.length} words found!`);
-  } else {
-    const el=document.getElementById("t2ScoreLabel");
-    el.style.color="#EA4335";
-    el.textContent=`Need ${T2_MIN_WORDS-found.length} more words to win!`;
-  }
-}
-
-/* ════════════════════════════════════════════════════════════
-   TRACK 3 — SPACE / AMONG US
-════════════════════════════════════════════════════════════ */
-function spawnStars(){
-  const bg=document.getElementById("starsBg");
-  if(bg.children.length>0) return;
-  for(let i=0;i<120;i++){
-    const s=document.createElement("div");
-    s.className="star";
-    const sz=Math.random()*2+0.5;
-    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
-    bg.appendChild(s);
-  }
-}
-
-function renderT3(state){
-  showScreen("screen-t3");
-  spawnStars();
-  const scanned=state.scanned||{};
-  const count=Object.keys(scanned).length;
-  const latestClue=state.lastClue||null;
-
-  // Update task card with latest scanned task
-  if(latestClue){
-    const task=T3_TASKS[latestClue-1];
-    document.getElementById("t3TaskName").textContent=task.name;
-    document.getElementById("t3TaskDesc").textContent=task.desc;
-    const imgEl=document.getElementById("t3TaskImg");
-    imgEl.innerHTML=`<img src="${task.img}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<div class=t3-task-img-placeholder>[ ${task.name} — add ${task.img} to your repo ]</div>'">`;
-  }
-
-  document.getElementById("t3ProgressText").textContent=`${count} / 8 TASKS COMPLETE`;
-
-  // Task manifest
-  const list=document.getElementById("t3TaskList");
-  list.innerHTML="";
-  T3_TASKS.forEach((task,i)=>{
-    const done=Object.values(scanned).some(v=>v.clue===i+1);
-    const item=document.createElement("div");
-    item.className=`t3-task-item ${done?'done':'pending'}`;
-    item.innerHTML=`<div class="t3-task-dot"></div><div class="t3-task-item-name">${done?'✓ ':' '}${task.name}</div>`;
-    list.appendChild(item);
-  });
-
-  // Complete
-  if(count>=8){
-    document.getElementById("t3CompleteBanner").style.display="block";
-    document.getElementById("t3TaskCard").style.display="none";
-  }
-}
-
-/* ════════════════════════════════════════════════════════════
-   TRACK 4 — WORDLE
-════════════════════════════════════════════════════════════ */
-let wordleState={word:"",guesses:[],currentGuess:"",solved:false,failed:false};
-
-function renderT4(state){
-  showScreen("screen-t4");
-  const t=TRACKS[4];
-  document.getElementById("t4Badge").style.cssText=`background:${t.light};border-color:${t.color}`;
-  document.getElementById("t4Badge").textContent=`${t.emoji} ${t.name}`;
-
-  const scanned=state.scanned||{};
-  const solvedCount=Object.keys(scanned).length;
-  const wordleIdx=solvedCount; // next wordle to solve
-
-  // progress dots
-  const dots=document.getElementById("t4Dots");
-  dots.innerHTML="";
-  for(let i=0;i<8;i++){
-    const d=document.createElement("div");
-    d.className=`t4-dot ${i<solvedCount?'done':i===solvedCount?'current':'pending'}`;
-    dots.appendChild(d);
-  }
-
-  if(solvedCount>=8){ showComplete(state,"All 8 Wordles solved!"); return; }
-
-  const word=T4_WORDS[wordleIdx].toUpperCase();
-  document.getElementById("t4WordleLabel").textContent=`Wordle #${wordleIdx+1} of 8`;
-
-  const hints=["Find the QR near the stairs","Check the pantry area","Look in the lobby","Near the games area","Find the rest zone QR","Xbox station QR","Jenga table area","At the doors"];
-  document.getElementById("t4WordleHint").textContent=`Hint: ${hints[wordleIdx]}`;
-
-  wordleState={word,guesses:[],currentGuess:"",solved:false,failed:false};
-  renderWordleGrid(word);
-  renderWordleKeyboard();
-}
-
-function renderWordleGrid(word){
-  const grid=document.getElementById("wordleGrid");
-  grid.innerHTML="";
-  const len=word.length;
-  const maxGuesses=6;
-  for(let r=0;r<maxGuesses;r++){
-    const row=document.createElement("div");
-    row.className="wordle-row";
-    for(let c=0;c<len;c++){
-      const cell=document.createElement("div");
-      cell.className="wordle-cell";
-      cell.id=`wc-${r}-${c}`;
-      row.appendChild(cell);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Endo's QR Hunt — GDGoC MUD</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&family=Google+Sans+Mono&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════
+   VARIABLES + RESET
+═══════════════════════════════════ */
+    :root {
+      --bg: #f5f0e8;
+      --paper: #fefcf7;
+      --ink: #1a1a1a;
+      --ink-mid: #555;
+      --border: 3px solid #1a1a1a;
+      --shadow: 5px 5px 0 #1a1a1a;
+      --shadow-lg: 8px 8px 0 #1a1a1a;
+      --shadow-sm: 3px 3px 0 #1a1a1a;
+      --gs: 'Google Sans', 'Product Sans', sans-serif;
+      --gm: 'Google Sans Mono', 'Roboto Mono', monospace;
     }
-    grid.appendChild(row);
-  }
-  updateWordleDisplay();
-}
 
-function updateWordleDisplay(){
-  const {word,guesses,currentGuess,solved,failed}=wordleState;
-  const len=word.length;
-  // fill submitted guesses
-  guesses.forEach((g,r)=>{
-    const result=scoreGuess(g,word);
-    for(let c=0;c<len;c++){
-      const cell=document.getElementById(`wc-${r}-${c}`);
-      if(cell){ cell.textContent=g[c]; cell.className=`wordle-cell ${result[c]}`; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-  });
-  // fill current guess row
-  const r=guesses.length;
-  if(r<6 && !solved && !failed){
-    for(let c=0;c<len;c++){
-      const cell=document.getElementById(`wc-${r}-${c}`);
-      if(cell){ cell.textContent=currentGuess[c]||""; cell.className=`wordle-cell ${currentGuess[c]?'active':''}`; }
+
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(circle, #1a1a1a18 1px, transparent 1px);
+      background-size: 26px 26px;
+      color: var(--ink);
+      font-family: var(--gs);
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-  }
-}
 
-function scoreGuess(guess,word){
-  const result=Array(word.length).fill("absent");
-  const wordArr=[...word], guessArr=[...guess];
-  const used=Array(word.length).fill(false);
-  // correct pass
-  guessArr.forEach((ch,i)=>{if(ch===wordArr[i]){result[i]="correct";used[i]=true;}});
-  // present pass
-  guessArr.forEach((ch,i)=>{
-    if(result[i]==="correct") return;
-    const wi=wordArr.findIndex((wch,j)=>!used[j]&&wch===ch);
-    if(wi!==-1){result[i]="present";used[wi]=true;}
-  });
-  return result;
-}
-
-function renderWordleKeyboard(){
-  const kb=document.getElementById("wordleKeyboard");
-  kb.innerHTML="";
-  const rows=[["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["ENTER","Z","X","C","V","B","N","M","⌫"]];
-  const keyStates={};
-  wordleState.guesses.forEach(g=>{
-    const res=scoreGuess(g,wordleState.word);
-    [...g].forEach((ch,i)=>{
-      const s=res[i];
-      if(!keyStates[ch]||(keyStates[ch]==="absent"&&s!=="absent")||(keyStates[ch]==="present"&&s==="correct")) keyStates[ch]=s;
-    });
-  });
-  rows.forEach(row=>{
-    const rowEl=document.createElement("div");
-    rowEl.className="wordle-key-row";
-    row.forEach(k=>{
-      const btn=document.createElement("button");
-      btn.className=`w-key${k.length>1?' wide':''} ${keyStates[k]||""}`;
-      btn.textContent=k;
-      btn.onclick=()=>handleWordleKey(k);
-      rowEl.appendChild(btn);
-    });
-    kb.appendChild(rowEl);
-  });
-}
-
-function handleWordleKey(key){
-  if(wordleState.solved||wordleState.failed) return;
-  const {word}=wordleState;
-  const msg=document.getElementById("t4Message");
-  msg.style.display="none";
-  if(key==="⌫"||key==="BACKSPACE"){
-    wordleState.currentGuess=wordleState.currentGuess.slice(0,-1);
-  } else if(key==="ENTER"){
-    if(wordleState.currentGuess.length!==word.length){
-      msg.style.display="block"; msg.className="t4-message fail";
-      msg.textContent=`Word must be ${word.length} letters!`; return;
+    /* ═══════════════════════════════════
+   SCREEN SYSTEM
+═══════════════════════════════════ */
+    [id^="screen-"] {
+      display: none;
+      min-height: 100vh;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeUp 0.3s ease forwards;
     }
-    wordleState.guesses.push(wordleState.currentGuess);
-    const correct=wordleState.currentGuess===word;
-    wordleState.currentGuess="";
-    if(correct){
-      wordleState.solved=true;
-      msg.style.display="block"; msg.className="t4-message success";
-      msg.textContent=`✅ Correct! Next QR unlocked!`;
-      renderWordleKeyboard();
-      updateWordleDisplay();
-      // advance state
-      const s=getState();
-      const clueKey=Object.keys(T4_CLUES).find(k=>T4_CLUES[k].clue===Object.keys(s.scanned||{}).length+1)||null;
-      // clue for this round already scanned — just mark progress
-      s.wordleSolved=(s.wordleSolved||0)+1;
-      // find which clue corresponds to this wordle index
-      const wordleNum=Object.keys(s.scanned||{}).length+1;
-      // The scan already happened — just record wordle solve
-      const pendingClue=Object.entries(T4_CLUES).find(([k,v])=>v.clue===wordleNum);
-      if(pendingClue){
-        s.scanned=s.scanned||{};
-        s.scanned[pendingClue[0]]={clue:pendingClue[1].clue,word:word};
-        saveState(s);
+
+    .active-screen {
+      display: flex !important;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
-      setTimeout(()=>{
-        if(Object.keys(s.scanned||{}).length>=8) showComplete(s,"All 8 Wordles solved! 🟩");
-        else renderT4(s);
-      },1800);
-    } else if(wordleState.guesses.length>=6){
-      wordleState.failed=true;
-      msg.style.display="block"; msg.className="t4-message fail";
-      msg.textContent=`The word was ${word}. Try again!`;
-      renderWordleKeyboard(); updateWordleDisplay();
-      setTimeout(()=>{
-        wordleState={word,guesses:[],currentGuess:"",solved:false,failed:false};
-        updateWordleDisplay(); renderWordleKeyboard();
-        msg.style.display="none";
-      },2500);
-    } else {
-      renderWordleKeyboard();
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-  } else if(/^[A-Z]$/.test(key)){
-    if(wordleState.currentGuess.length<word.length) wordleState.currentGuess+=key;
-  }
-  updateWordleDisplay();
-}
 
-// Physical keyboard support for T4
-document.addEventListener("keydown",e=>{
-  if(!document.getElementById("screen-t4").classList.contains("active-screen")) return;
-  if(e.key==="Enter") handleWordleKey("ENTER");
-  else if(e.key==="Backspace") handleWordleKey("⌫");
-  else if(/^[a-zA-Z]$/.test(e.key)) handleWordleKey(e.key.toUpperCase());
-});
+    @keyframes stampIn {
+      from {
+        transform: translateY(-12px);
+        opacity: 0;
+      }
 
-/* ════════════════════════════════════════════════════════════
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(-12px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes cardPop {
+      from {
+        transform: translateY(14px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* ═══════════════════════════════════
+   WELCOME / LANDING
+═══════════════════════════════════ */
+    #screen-welcome {
+      padding: 0;
+      display: none;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: transparent;
+      border-bottom: var(--border);
+      width: fit-content;
+      animation: stampIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      margin-left: auto;
+      padding-right: 10px;
+    }
+
+    .gdg-logo {
+      width: 5em;
+      height: 5em;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .gdg-line1 {
+      font-weight: 700;
+      font-size: 40px;
+      color: var(--bg);
+      line-height: 1.1;
+    }
+
+    .gdg-line2 {
+      font-weight: 400;
+      font-size: 25px;
+      color: #4285F4;
+      line-height: 1.2;
+
+    }
+
+    .top-bar-right {
+      margin-left: auto;
+      font-family: var(--gm);
+      font-size: 11px;
+      color: #aaa;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .hero-block {
+      background: var(--ink);
+      border-bottom: var(--border);
+      padding: 24px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      animation: stampIn 0.5s 0.05s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .endo-logo {
+      width: 9em;
+      height: 9em;
+      object-fit: contain;
+      filter: drop-shadow(0 0 16px #ffffff2a);
+      flex-shrink: 0;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--gm);
+      font-size: 16px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .hero-main {
+      font-family: var(--gs);
+      font-weight: 700;
+      font-size: clamp(40px, 7vw, 90px);
+      line-height: 1;
+      color: #fff;
+      text-shadow: black 3px 3px 0, white 4px 4px 0;
+    }
+
+    .c-blue {
+      color: #4285F4;
+    }
+
+    .c-red {
+      color: #EA4335;
+    }
+
+    .c-green {
+      color: #34A853;
+    }
+
+    .c-yellow {
+      color: #FBBC04;
+    }
+
+    .hero-tagline {
+      font-family: var(--gm);
+      font-size: 12px;
+      color: #555;
+      letter-spacing: 1px;
+      margin-top: 8px;
+      text-transform: uppercase;
+    }
+
+    .howto-strip {
+      width: 100%;
+      background: #fef08a;
+      border-bottom: var(--border);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideIn 0.4s 0.1s ease both;
+    }
+
+    .howto-strip p {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .howto-strip strong {
+      font-weight: 700;
+    }
+
+    .tracks-section {
+      flex: 1;
+      width: 100%;
+      padding: 18px 28px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .section-label {
+      font-family: var(--gm);
+      font-size: 12px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--ink-mid);
+      margin-bottom: 12px;
+    }
+
+    .tracks-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      flex: 1;
+      padding-bottom: 16px;
+    }
+
+    /* Track card — QR prominent at top */
+    .track-card {
+      background: var(--paper);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      gap: 0;
+      transition: transform 0.12s, box-shadow 0.12s;
+      animation: cardPop 0.35s ease both;
+      animation-delay: 0s;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: stretch;
+    }
+
+    .track-card> :first-child {
+      aspect-ratio: 1 / 1;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .track-card> :nth-child(2) {
+      min-width: 0;
+    }
+
+    .track-card:hover {
+      transform: translate(-3px, -3px);
+      box-shadow: 8px 8px 0 var(--ink);
+    }
+
+    .track-card:nth-child(1) {
+      animation-delay: 0.08s
+    }
+
+    .track-card:nth-child(2) {
+      animation-delay: 0.12s
+    }
+
+    .track-card:nth-child(3) {
+      animation-delay: 0.16s
+    }
+
+    .track-card:nth-child(4) {
+      animation-delay: 0.20s
+    }
+
+    .track-card:nth-child(5) {
+      animation-delay: 0.24s
+    }
+
+    .tc-qr-block {
+      aspect-ratio: 1.5;
+      background: var(--bg);
+      /* border-bottom: var(--border); */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      background-color: white;
+    }
+
+    .tc-qr-block img {
+      width: 19em;
+      object-fit: contain;
+    }
+
+    .tc-qr-fallback {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .tc-qr-fallback .qr-icon {
+      font-size: 40px;
+    }
+
+    .tc-qr-fallback .qr-label {
+      font-family: var(--gm);
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ink-mid);
+    }
+
+    .tc-info {
+      padding: 14px 14px 12px;
+      border-left: var(--border);
+    }
+
+    .tc-bar {
+      height: 6px;
+      border: 2px solid var(--ink);
+      border-radius: 1px;
+      margin-bottom: 10px;
+    }
+
+    .tc-num {
+      font-family: var(--gm);
+      font-size: 16px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ink-mid);
+      margin-top: 5px;
+    }
+
+    .tc-name {
+      font-weight: 700;
+      font-size: 24px;
+      line-height: 1;
+      color: var(--ink);
+      margin: 10px 4px;
+    }
+
+    .tc-desc {
+      font-size: 16px;
+      color: var(--ink-mid);
+      line-height: 1.4;
+    }
+
+    .tc-clues {
+      font-family: var(--gm);
+      font-size: 12px;
+      color: var(--ink-mid);
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 2px dashed #ccc;
+    }
+
+    .footer-bar {
+      width: 100%;
+      background: var(--paper);
+      border-top: var(--border);
+      padding: 11px 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-bar span {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-mid);
+    }
+
+    .live-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #34A853;
+      border: 2px solid var(--ink);
+      animation: pulse 1.4s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.4);
+      }
+    }
+
+    /* ═══════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════ */
+    .nb-card {
+      width: 100%;
+      max-width: 500px;
+      background: var(--paper);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      margin-bottom: 14px;
+    }
+
+    .nb-label {
+      font-family: var(--gm);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--ink-mid);
+      margin-bottom: 12px;
+    }
+
+    .nb-track-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border: 2px solid var(--ink);
+      font-weight: 700;
+      font-size: 13px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nb-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 22px;
+      font-family: var(--gs);
+      font-weight: 700;
+      font-size: 14px;
+      border: var(--border);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      width: 100%;
+      max-width: 500px;
+      text-decoration: none;
+    }
+
+    .nb-btn+.nb-btn {
+      margin-top: 10px;
+    }
+
+    .nb-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: none !important;
+    }
+
+    .nb-btn-dark {
+      background: var(--ink);
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .nb-btn-ghost {
+      background: var(--paper);
+      color: var(--ink-mid);
+      box-shadow: var(--shadow-sm);
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    .big-icon {
+      font-size: 56px;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .big-title {
+      font-weight: 700;
+      font-size: 36px;
+      text-align: center;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .big-body {
+      font-size: 14px;
+      color: var(--ink-mid);
+      text-align: center;
+      line-height: 1.65;
+      font-weight: 500;
+    }
+
+    .accent-left-red {
+      border-left: 6px solid #EA4335;
+    }
+
+    .accent-left-yellow {
+      border-left: 6px solid #FBBC04;
+    }
+
+    .msg-box {
+      padding: 12px 16px;
+      border: 2px solid var(--ink);
+      font-weight: 600;
+      font-size: 14px;
+      text-align: center;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .msg-box.ok {
+      background: #ceead6;
+      border-color: #34A853;
+    }
+
+    .msg-box.err {
+      background: #fad2cf;
+      border-color: #EA4335;
+    }
+
+    .msg-box.info {
+      background: #d2e3fc;
+      border-color: #4285F4;
+    }
+
+    /* ═══════════════════════════════════
+   UTILITY SCREENS
+═══════════════════════════════════ */
+    #screen-wrong-track,
+    #screen-already-scanned,
+    #screen-invalid {
+      padding: 40px 20px 60px;
+      gap: 14px;
+    }
+
+    /* ═══════════════════════════════════
+   COMPLETE
+═══════════════════════════════════ */
+    #screen-complete {
+      padding: 32px 20px 60px;
+      gap: 14px;
+    }
+
+    .phrase-box {
+      width: 100%;
+      max-width: 500px;
+      background: var(--ink);
+      color: #fff;
+      border: var(--border);
+      box-shadow: var(--shadow-lg);
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 0;
+    }
+
+    .phrase-box .plabel {
+      font-family: var(--gm);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .phrase-box .phrase-text {
+      font-weight: 700;
+      font-size: 26px;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    /* ═══════════════════════════════════
+   TRACK 1 — CIPHER
+═══════════════════════════════════ */
+    #screen-t1 {
+      padding: 32px 20px 60px;
+      gap: 14px;
+    }
+
+    .t1-tile {
+      padding: 10px 16px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.1s;
+      touch-action: none;
+    }
+
+    .t1-tile:active {
+      transform: scale(1.05);
+    }
+
+    .t1-tile.in-answer {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .t1-puzzle-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 54px;
+      padding: 12px;
+      background: var(--bg);
+      border: 2px dashed var(--ink);
+      margin-bottom: 10px;
+      align-content: flex-start;
+    }
+
+    .t1-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px;
+      background: var(--paper);
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .frag-chip {
+      padding: 5px 12px;
+      font-family: var(--gm);
+      font-size: 13px;
+      font-weight: 500;
+      border: 2px solid var(--ink);
+    }
+
+    .frag-chip.found {
+      color: #fff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .frag-chip.empty {
+      color: #bbb;
+      border-style: dashed;
+    }
+
+    /* ═══════════════════════════════════
+   TRACK 2 — LEXICON
+═══════════════════════════════════ */
+    #screen-t2 {
+      padding: 32px 20px 60px;
+      gap: 14px;
+    }
+
+    .t2-letter-tile {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .t2-letter-tile.revealed {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .t2-letter-tile.hidden {
+      background: var(--bg);
+      color: #ccc;
+      border-style: dashed;
+    }
+
+    .t2-input {
+      flex: 1;
+      padding: 12px 16px;
+      font-family: var(--gs);
+      font-weight: 600;
+      font-size: 16px;
+      border: var(--border);
+      background: var(--paper);
+      text-transform: uppercase;
+    }
+
+    .t2-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px #4285F433;
+    }
+
+    .t2-found-chip {
+      padding: 5px 12px;
+      font-family: var(--gm);
+      font-size: 13px;
+      border: 2px solid var(--ink);
+      background: var(--paper);
+    }
+
+    .t2-found-chip.good {
+      background: #34A853;
+      color: #fff;
+      border-color: #34A853;
+    }
+
+    .t2-score-bar {
+      width: 100%;
+      height: 16px;
+      background: var(--bg);
+      border: 2px solid var(--ink);
+      overflow: hidden;
+    }
+
+    .t2-score-fill {
+      height: 100%;
+      background: #34A853;
+      transition: width 0.4s;
+    }
+
+    /* ═══════════════════════════════════
+   TRACK 3 — SPACE / AMONG US
+═══════════════════════════════════ */
+    #screen-t3 {
+      padding: 0;
+      background: #0a0a1a;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .stars-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      animation: twinkle linear infinite;
+    }
+
+    @keyframes twinkle {
+
+      0%,
+      100% {
+        opacity: 0.2;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    .t3-content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .t3-ship {
+      font-size: 52px;
+      display: block;
+      text-align: center;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .t3-title {
+      font-weight: 700;
+      font-size: 24px;
+      color: #7dd3fc;
+      letter-spacing: 1px;
+      text-shadow: 0 0 20px #7dd3fc66;
+      text-align: center;
+    }
+
+    .t3-subtitle {
+      font-family: var(--gm);
+      font-size: 11px;
+      color: #475569;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    .t3-card {
+      width: 100%;
+      background: #0f172a;
+      border: 2px solid #1e293b;
+      border-radius: 4px;
+      padding: 18px;
+      box-shadow: 0 0 30px #7dd3fc0a;
+    }
+
+    .t3-card-label {
+      font-family: var(--gm);
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 10px;
+    }
+
+    .t3-task-img {
+      width: 100%;
+      height: 140px;
+      background: #1e293b;
+      border: 2px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .t3-task-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .t3-task-img .placeholder-text {
+      font-family: var(--gm);
+      font-size: 11px;
+      color: #475569;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .t3-task-name {
+      font-weight: 700;
+      font-size: 17px;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+    }
+
+    .t3-task-desc {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.55;
+    }
+
+    .t3-progress-text {
+      font-family: var(--gm);
+      font-size: 11px;
+      color: #7dd3fc;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .t3-task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      transition: all 0.4s;
+    }
+
+    .t3-task-item.done {
+      background: #052e16aa;
+    }
+
+    .t3-task-item.pending {
+      background: #1e293b55;
+    }
+
+    .t3-task-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 2px solid;
+    }
+
+    .t3-task-item.done .t3-task-dot {
+      background: #22c55e;
+      border-color: #22c55e;
+      box-shadow: 0 0 8px #22c55e66;
+    }
+
+    .t3-task-item.pending .t3-task-dot {
+      background: transparent;
+      border-color: #334155;
+    }
+
+    .t3-task-item-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .t3-task-item.done .t3-task-item-name {
+      color: #86efac;
+    }
+
+    .t3-task-item.pending .t3-task-item-name {
+      color: #475569;
+    }
+
+    .t3-complete-banner {
+      background: #052e16;
+      border: 2px solid #22c55e;
+      border-radius: 4px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 0 30px #22c55e33;
+      width: 100%;
+    }
+
+    .t3-intro-box {
+      background: #0f172a;
+      border: 2px solid #7dd3fc44;
+      border-radius: 4px;
+      padding: 22px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .t3-intro-box p {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.65;
+      margin-top: 10px;
+    }
+
+    .t3-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px;
+      font-family: var(--gs);
+      font-weight: 700;
+      font-size: 14px;
+      border: 2px solid #1e3a5f;
+      background: #0f172a;
+      color: #7dd3fc;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 0;
+    }
+
+    .t3-btn:hover {
+      background: #1e293b;
+    }
+
+    /* ═══════════════════════════════════
+   TRACK 4 — WORDLE
+═══════════════════════════════════ */
+    #screen-t4 {
+      padding: 32px 20px 60px;
+      gap: 14px;
+    }
+
+    .wordle-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .wordle-row {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .wordle-cell {
+      width: 52px;
+      height: 52px;
+      border: 3px solid var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      text-transform: uppercase;
+      transition: all 0.3s;
+      background: var(--paper);
+    }
+
+    .wordle-cell.correct {
+      background: #34A853;
+      color: #fff;
+      border-color: #34A853;
+    }
+
+    .wordle-cell.present {
+      background: #FBBC04;
+      color: #fff;
+      border-color: #FBBC04;
+    }
+
+    .wordle-cell.absent {
+      background: #555;
+      color: #fff;
+      border-color: #555;
+    }
+
+    .wordle-cell.filled {
+      border-color: #4285F4;
+    }
+
+    .wordle-keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .wordle-key-row {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .w-key {
+      padding: 12px 6px;
+      min-width: 30px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      font-family: var(--gs);
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .w-key:active {
+      transform: translate(2px, 2px);
+      box-shadow: none;
+    }
+
+    .w-key.wide {
+      min-width: 50px;
+      font-size: 10px;
+    }
+
+    .w-key.correct {
+      background: #34A853;
+      color: #fff;
+      border-color: #34A853;
+    }
+
+    .w-key.present {
+      background: #FBBC04;
+      color: #fff;
+      border-color: #FBBC04;
+    }
+
+    .w-key.absent {
+      background: #555;
+      color: #fff;
+      border-color: #555;
+    }
+
+    .t4-dots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .t4-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--ink);
+    }
+
+    .t4-dot.done {
+      background: #34A853;
+    }
+
+    .t4-dot.waiting {
+      background: #FBBC04;
+    }
+
+    .t4-dot.current {
+      background: #4285F4;
+      animation: pulse 1s infinite;
+    }
+
+    .t4-dot.pending {
+      background: transparent;
+    }
+
+    .t4-hint-box {
+      width: 100%;
+      max-width: 500px;
+      padding: 10px 16px;
+      background: #fef3c7;
+      border: 2px solid #FBBC04;
+      font-size: 13px;
+      color: #92400e;
+      text-align: center;
+      display: none;
+    }
+
+    .t4-found-location {
+      background: var(--ink);
+      color: #fff;
+      border: var(--border);
+      padding: 20px;
+      text-align: center;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .t4-found-location .word {
+      font-weight: 700;
+      font-size: 36px;
+      letter-spacing: 3px;
+      color: #34A853;
+      margin: 8px 0;
+    }
+
+    .t4-found-location p {
+      font-size: 13px;
+      color: #aaa;
+      font-family: var(--gm);
+    }
+
+    /* ═══════════════════════════════════
    TRACK 5 — SLIDING PUZZLE
-════════════════════════════════════════════════════════════ */
-let puzzleArr=[], emptyIdx=8; // 3x3, index 8 = empty
-
-function renderT5(state){
-  showScreen("screen-t5");
-  const t=TRACKS[5];
-  document.getElementById("t5Badge").style.cssText=`background:${t.light};border-color:${t.color}`;
-  document.getElementById("t5Badge").textContent=`${t.emoji} ${t.name}`;
-
-  const scanned=state.scanned||{};
-  const count=Object.keys(scanned).length;
-  document.getElementById("t5CollectedLabel").textContent=`Pieces Collected: ${count} / 8`;
-
-  const coll=document.getElementById("t5Collection");
-  coll.innerHTML="";
-  for(let i=0;i<8;i++){
-    const e=Object.values(scanned).find(v=>v.clue===i+1);
-    const el=document.createElement("div");
-    if(e){
-      const img=document.createElement("img");
-      img.className="t5-piece-thumb";
-      img.src=T5_IMAGES[i];
-      img.alt=`Piece ${i+1}`;
-      img.onerror=function(){this.outerHTML=`<div class="t5-piece-thumb" style="background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#666;font-family:var(--gm)">${i+1}</div>`;};
-      coll.appendChild(img);
-    } else {
-      el.className="t5-piece-thumb locked";
-      el.textContent="🔒";
-      coll.appendChild(el);
+═══════════════════════════════════ */
+    #screen-t5 {
+      padding: 32px 20px 60px;
+      gap: 14px;
     }
-  }
 
-  const puzzleSec=document.getElementById("t5PuzzleSection");
-  const status=document.getElementById("t5Status");
-  if(count<8){
-    status.textContent=`${count}/8 pieces collected — keep scanning!`;
-    puzzleSec.style.display="none";
-  } else {
-    status.textContent="All pieces collected! Solve the sliding puzzle.";
-    puzzleSec.style.display="flex";
-    if(!state.puzzleInit){
-      initSlidingPuzzle();
-      const s=getState(); s.puzzleInit=true; s.puzzleArr=puzzleArr; saveState(s);
-    } else {
-      puzzleArr=state.puzzleArr||[...Array(8).keys(),null];
-      emptyIdx=puzzleArr.indexOf(null);
-      renderPuzzleGrid();
+    .t5-piece-thumb {
+      width: 46px;
+      height: 46px;
+      border: 2px solid var(--ink);
+      object-fit: cover;
     }
-  }
-}
 
-function initSlidingPuzzle(){
-  puzzleArr=[...Array(8).keys(),null];
-  emptyIdx=8;
-  shufflePuzzle();
-}
-
-function shufflePuzzle(){
-  for(let i=0;i<200;i++){
-    const neighbors=getNeighbors(emptyIdx);
-    const pick=neighbors[Math.floor(Math.random()*neighbors.length)];
-    swapTiles(pick,emptyIdx);
-  }
-  renderPuzzleGrid();
-}
-
-function getNeighbors(idx){
-  const col=idx%3, row=Math.floor(idx/3), res=[];
-  if(row>0) res.push(idx-3);
-  if(row<2) res.push(idx+3);
-  if(col>0) res.push(idx-1);
-  if(col<2) res.push(idx+1);
-  return res;
-}
-
-function swapTiles(a,b){[puzzleArr[a],puzzleArr[b]]=[puzzleArr[b],puzzleArr[a]];emptyIdx=puzzleArr.indexOf(null);}
-
-function renderPuzzleGrid(){
-  const grid=document.getElementById("puzzleGrid");
-  grid.innerHTML="";
-  const size=grid.parentElement.offsetWidth||300;
-  const tileSize=Math.floor((size-6)/3);
-  puzzleArr.forEach((piece,i)=>{
-    const tile=document.createElement("div");
-    tile.className=`puzzle-tile ${piece===null?'empty':''}`;
-    tile.style.cssText=`width:${tileSize}px;height:${tileSize}px;`;
-    if(piece!==null){
-      const img=document.createElement("img");
-      img.src=T5_IMAGES[piece];
-      img.style.cssText="width:100%;height:100%;object-fit:cover;display:block";
-      img.onerror=function(){
-        this.remove();
-        tile.style.background="#e0e0e0";
-        tile.innerHTML=`<span style="font-size:22px;color:#555">${piece+1}</span>`;
-      };
-      tile.appendChild(img);
-      tile.onclick=()=>clickTile(i);
+    .t5-piece-thumb.locked {
+      background: var(--bg);
+      border-style: dashed;
+      border-color: #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #ccc;
     }
-    grid.appendChild(tile);
-  });
-}
 
-function clickTile(idx){
-  if(!getNeighbors(emptyIdx).includes(idx)) return;
-  swapTiles(idx,emptyIdx);
-  renderPuzzleGrid();
-  const s=getState(); s.puzzleArr=puzzleArr; saveState(s);
-  checkPuzzleSolved(s);
-}
+    .puzzle-container {
+      width: 100%;
+      max-width: 360px;
+      aspect-ratio: 1;
+    }
 
-function checkPuzzleSolved(s){
-  const solved=puzzleArr.every((v,i)=>i===8?v===null:v===i);
-  if(solved){
-    const msg=document.getElementById("t5Message");
-    msg.style.display="block"; msg.className="t4-message success";
-    msg.textContent="🎉 Puzzle solved! Head to the booth!";
-    s.completed=true; saveState(s);
-    setTimeout(()=>showComplete(s,"Sliding puzzle solved! 🖼️"),1500);
-  }
-}
+    .puzzle-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 3px;
+      width: 100%;
+      height: 100%;
+    }
 
-/* ════════════════════════════════════════════════════════════
+    .puzzle-tile {
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      transition: all 0.12s;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .puzzle-tile:active {
+      transform: scale(0.95);
+    }
+
+    .puzzle-tile.empty-tile {
+      background: var(--bg);
+      border-style: dashed;
+      border-color: #ccc;
+      cursor: default;
+    }
+
+    .puzzle-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ═══════════════════════════════════
    TRACK 6 — RICKROLL
-════════════════════════════════════════════════════════════ */
-const RICKROLL_MSGS=["Calibrating sigma frequencies...","Optimising grindset matrix...","Syncing with the hustle cloud...","Loading maximum productivity...","Almost there, bestie..."];
-function renderT6(){
-  showScreen("screen-t6");
-  let i=0;
-  const status=document.getElementById("t6Status");
-  const interval=setInterval(()=>{
-    status.textContent=RICKROLL_MSGS[i%RICKROLL_MSGS.length]; i++;
-  },500);
-  setTimeout(()=>{
-    clearInterval(interval);
-    window.location.href="https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-  },3000);
-}
+═══════════════════════════════════ */
+    #screen-t6 {
+      padding: 40px 20px 60px;
+      gap: 14px;
+      background: var(--paper);
+    }
 
-/* ════════════════════════════════════════════════════════════
-   COMPLETE SCREEN
-════════════════════════════════════════════════════════════ */
-function showComplete(state,resultText){
-  showScreen("screen-complete");
-  const t=TRACKS[state.track];
-  document.getElementById("completePhrase").textContent=resultText||"Quest complete!";
-  document.getElementById("completePhraseLabel").textContent="Your Result";
-  const cb=document.getElementById("completeBadge");
-  cb.style.background=t.light; cb.style.borderColor=t.color;
-  cb.textContent=`${t.emoji} ${t.name}`;
-  spawnConfetti();
-}
+    .t6-fake-bar {
+      width: 100%;
+      max-width: 420px;
+      height: 20px;
+      background: var(--bg);
+      border: var(--border);
+      overflow: hidden;
+      margin: 8px 0;
+    }
 
-/* ════════════════════════════════════════════════════════════
+    .t6-fake-fill {
+      height: 100%;
+      background: #4285F4;
+      animation: fakeFill 2.8s ease forwards;
+    }
+
+    @keyframes fakeFill {
+      0% {
+        width: 0%;
+      }
+
+      70% {
+        width: 83%;
+      }
+
+      100% {
+        width: 100%;
+      }
+    }
+
+    /* ═══════════════════════════════════
    CONFETTI
-════════════════════════════════════════════════════════════ */
-function spawnConfetti(){
-  const wrap=document.getElementById("confettiWrap");
-  const cols=["#4285F4","#34A853","#FBBC04","#EA4335","#9b59b6","#f59e0b","#1a1a1a"];
-  for(let i=0;i<100;i++){
-    const el=document.createElement("div");
-    el.className="cdot";
-    const sz=6+Math.random()*10;
-    el.style.cssText=`left:${Math.random()*100}vw;top:-20px;width:${sz}px;height:${Math.random()>0.6?sz*0.45:sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};animation-duration:${1.6+Math.random()*2.4}s;animation-delay:${Math.random()*0.9}s;`;
-    wrap.appendChild(el);
-    el.addEventListener("animationend",()=>el.remove());
-  }
-}
+═══════════════════════════════════ */
+    .confetti-wrap {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      overflow: hidden;
+    }
 
-/* ════════════════════════════════════════════════════════════
-   MAIN ROUTER
-════════════════════════════════════════════════════════════ */
-function main(){
-  const params=new URLSearchParams(window.location.search);
-  const token=params.get("clue");
+    .cdot {
+      position: absolute;
+      animation: fall linear forwards;
+      border: 1.5px solid var(--ink);
+    }
 
-  if(!token){
-    const s=getState();
-    if(s) routeToTrack(s);
-    else showWelcome();
-    return;
-  }
+    @keyframes fall {
+      0% {
+        transform: translateY(-20px) rotate(0deg);
+        opacity: 1;
+      }
 
-  const clue=ALL_CLUES[token];
-  if(!clue){ showScreen("screen-invalid"); return; }
+      100% {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
 
-  let state=getState();
-  if(!state) state={track:clue.track,scanned:{}};
+<body>
+  <div class="confetti-wrap" id="confettiWrap"></div>
 
-  if(state.track!==clue.track){
-    showScreen("screen-wrong-track");
-    const mt=TRACKS[state.track],ct=TRACKS[clue.track];
-    document.getElementById("wrongBody").innerHTML=
-      `This QR is from <strong>${ct.emoji} ${ct.name}</strong>. You're on <strong>${mt.emoji} ${mt.name}</strong>.`;
-    return;
-  }
+  <!-- ═══════════════════════════════════
+     WELCOME
+═══════════════════════════════════ -->
+  <div id="screen-welcome">
+    <div class="hero-block">
+      <img src="endo.png" class="endo-logo" alt="Endo" onerror="this.style.display='none'">
+      <div>
+        <div class="hero-eyebrow">Find the fragments · Complete the challenge · Claim your prize</div>
+        <div class="hero-main">ENDO'S&nbsp;<span class="c-blue">Q</span><span class="c-red">R</span>&nbsp;<span
+            class="c-green">H</span><span class="c-yellow">U</span>NT</div>
+        <div class="hero-tagline">6 unique pathways · scan QR codes around campus · win prizes</div>
+      </div>
+      <div class="top-bar">
+        <img src="w.png" class="gdg-logo" alt="GDGoC" onerror="this.style.display='none'">
+        <div>
+          <div class="gdg-line1">Google Developer Group</div>
+          <div class="gdg-line2">On Campus Murdoch University Dubai</div>
+        </div>
+      </div>
 
-  if(state.scanned[token]){ showScreen("screen-already-scanned"); return; }
+    </div>
+    <div class="howto-strip">
+      <span style="font-size:18px;flex-shrink:0">📋</span>
+      <p><strong>How it works:</strong> Scan a pathway's starting QR code below to begin. Then hunt around campus — each
+        pathway has its own unique challenge. Complete it and show us at the booth to claim your prize!</p>
+    </div>
+    <div class="tracks-section">
+      <div class="section-label">— Scan a pathway QR to begin —</div>
+      <div class="tracks-grid" id="trackGrid"></div>
+    </div>
+    <div class="footer-bar">
+      <div class="live-dot"></div>
+      <span>Scan the QR code on any pathway card to start. Your pathway locks on first scan.</span>
+    </div>
+  </div>
 
-  // Track-specific scan handling
-  if(clue.track===1){
-    const data=T1_CLUES[token];
-    state.scanned[token]={clue:data.clue,word:data.word};
-  } else if(clue.track===2){
-    const data=T2_CLUES[token];
-    state.scanned[token]={clue:data.clue,letter:data.letter};
-  } else if(clue.track===3){
-    state.scanned[token]={clue:clue.clue};
-    state.lastClue=clue.clue;
-  } else if(clue.track===4){
-    // For track 4, we DON'T mark scanned here — wordle must be solved first
-    // Store pending scan
-    state.pendingWordle=token;
-    saveState(state);
-    window.history.replaceState({},"",window.location.pathname);
-    renderT4(state);
-    return;
-  } else if(clue.track===5){
-    state.scanned[token]={clue:clue.clue};
-  } else if(clue.track===6){
-    saveState(state);
-    window.history.replaceState({},"",window.location.pathname);
-    renderT6();
-    return;
-  }
+  <!-- ═══════════════════════════════════
+     WRONG TRACK
+═══════════════════════════════════ -->
+  <div id="screen-wrong-track">
+    <div class="nb-card accent-left-red" style="max-width:500px;margin-top:40px">
+      <div class="big-icon">🚫</div>
+      <div class="big-title">Wrong Pathway!</div>
+      <div class="big-body" id="wrongBody">This QR belongs to a different pathway.</div>
+    </div>
+    <button class="nb-btn nb-btn-ghost" onclick="goBack()">← Back to my progress</button>
+  </div>
 
-  saveState(state);
-  window.history.replaceState({},"",window.location.pathname);
-  routeToTrack(state);
-}
+  <!-- ═══════════════════════════════════
+     ALREADY SCANNED
+═══════════════════════════════════ -->
+  <div id="screen-already-scanned">
+    <div class="nb-card accent-left-yellow" style="max-width:500px;margin-top:40px">
+      <div class="big-icon">✅</div>
+      <div class="big-title">Already Got This!</div>
+      <div class="big-body">You've scanned this one already. Keep hunting!</div>
+    </div>
+    <button class="nb-btn nb-btn-ghost" onclick="goBack()">← Back to my progress</button>
+  </div>
 
-// Fix T4: when QR is scanned, store pending and show wordle
-// After wordle solved, mark scanned
-function handleT4Scan(token,state){
-  state.pendingWordle=token;
-  saveState(state);
-  renderT4(state);
-}
+  <!-- ═══════════════════════════════════
+     INVALID
+═══════════════════════════════════ -->
+  <div id="screen-invalid">
+    <div class="nb-card" style="max-width:500px;margin-top:40px">
+      <div class="big-icon">❓</div>
+      <div class="big-title">Invalid Code</div>
+      <div class="big-body">This doesn't look like an official QR Hunt code.</div>
+    </div>
+  </div>
 
-main();
-</script>
+  <!-- ═══════════════════════════════════
+     COMPLETE
+═══════════════════════════════════ -->
+  <div id="screen-complete">
+    <div class="nb-card" style="max-width:500px;text-align:center">
+      <img src="endo.png" style="height:72px;object-fit:contain;margin:0 auto 8px;display:block" alt="Endo"
+        onerror="this.style.display='none'">
+      <div class="big-title" style="font-size:40px">Quest Complete!</div>
+      <div class="big-body">Head to the GDGoC booth and show us this screen to claim your prize 🎉</div>
+    </div>
+    <div class="phrase-box">
+      <div class="plabel" id="completePhraseLabel">Your Result</div>
+      <div class="phrase-text" id="completePhrase"></div>
+    </div>
+    <div class="nb-card" style="max-width:500px;display:flex;align-items:center;justify-content:space-between">
+      <div class="nb-label" style="margin:0">Completed Pathway</div>
+      <div class="nb-track-badge" id="completeBadge"></div>
+    </div>
+    <button class="nb-btn nb-btn-ghost" onclick="resetProgress()">Start a new quest</button>
+  </div>
+
+  <!-- ═══════════════════════════════════
+     TRACK 1 — CIPHER
+═══════════════════════════════════ -->
+  <div id="screen-t1">
+    <div
+      style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;margin-bottom:14px">
+      <img src="endo.png" style="height:32px;object-fit:contain" alt="" onerror="this.style.display='none'">
+      <div class="nb-track-badge" id="t1Badge"></div>
+    </div>
+
+    <!-- Start state (0 scanned) -->
+    <div id="t1StartCard" class="nb-card" style="max-width:500px;text-align:center;display:none">
+      <div class="big-icon">🔡</div>
+      <div class="big-title" style="font-size:28px">Pathway Activated!</div>
+      <div class="big-body" style="margin-top:8px">You've chosen the <strong>Cipher</strong> pathway. Head out and scan
+        the 8 hidden QR codes around campus. Each one gives you a word — collect them all to unlock the sentence puzzle!
+      </div>
+    </div>
+
+    <!-- Progress card -->
+    <div id="t1ProgressCard" class="nb-card" style="max-width:500px;display:none">
+      <div class="nb-label">Words Collected</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px" id="t1WordChips"></div>
+      <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid)" id="t1Status"></div>
+    </div>
+
+    <!-- Puzzle (all 8 collected) -->
+    <div id="t1PuzzleSection"
+      style="display:none;width:100%;max-width:500px;flex-direction:column;gap:14px;align-items:center">
+      <div class="nb-card" style="max-width:500px;width:100%">
+        <div class="nb-label">Arrange into the correct sentence</div>
+        <div style="font-size:12px;color:var(--ink-mid);margin-bottom:10px">Tap a word to add it to your answer. Tap
+          again to remove.</div>
+        <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid);margin-bottom:6px">YOUR ANSWER:</div>
+        <div class="t1-puzzle-area" id="t1AnswerArea"></div>
+        <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid);margin-bottom:6px;margin-top:10px">WORD
+          BANK:</div>
+        <div class="t1-bank" id="t1Bank"></div>
+      </div>
+      <div id="t1Feedback" style="display:none" class="msg-box"></div>
+      <button class="nb-btn nb-btn-dark" onclick="checkT1Answer()">✓ Submit Sentence</button>
+      <button class="nb-btn nb-btn-ghost" onclick="resetT1Puzzle()">↺ Clear &amp; Reset</button>
+    </div>
+
+    <button class="nb-btn nb-btn-ghost" style="max-width:500px" onclick="resetProgress()">↩ Switch pathway</button>
+  </div>
+
+  <!-- ═══════════════════════════════════
+     TRACK 2 — LEXICON
+═══════════════════════════════════ -->
+  <div id="screen-t2">
+    <div
+      style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;margin-bottom:14px">
+      <img src="endo.png" style="height:32px;object-fit:contain" alt="" onerror="this.style.display='none'">
+      <div class="nb-track-badge" id="t2Badge"></div>
+    </div>
+
+    <div id="t2StartCard" class="nb-card" style="max-width:500px;text-align:center;display:none">
+      <div class="big-icon">🔤</div>
+      <div class="big-title" style="font-size:28px">Pathway Activated!</div>
+      <div class="big-body" style="margin-top:8px">You've chosen the <strong>Lexicon</strong> pathway. Hunt down 8 QR
+        codes — each reveals one letter. Once you have all 8, make as many words as you can from them!</div>
+    </div>
+
+    <div id="t2MainCard" class="nb-card" style="max-width:500px;display:none">
+      <div class="nb-label">Your Letters</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px" id="t2Letters"></div>
+      <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid)" id="t2Status"></div>
+    </div>
+
+    <div id="t2InputCard" class="nb-card" style="max-width:500px;display:none">
+      <div class="nb-label">Make Words</div>
+      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:12px">Use only your 8 letters. Find as many valid
+        words as possible (min 3 letters).</div>
+      <div class="t2-score-bar" style="margin-bottom:8px">
+        <div class="t2-score-fill" id="t2ScoreFill" style="width:0%"></div>
+      </div>
+      <div style="font-family:var(--gm);font-size:11px;color:var(--ink-mid);margin-bottom:12px" id="t2ScoreLabel">0 / 5
+        words found</div>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <input class="t2-input" id="t2Input" placeholder="TYPE A WORD" maxlength="8"
+          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')submitT2Word()">
+        <button class="nb-btn nb-btn-dark" style="width:auto;padding:12px 18px" onclick="submitT2Word()">+</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px" id="t2WordsFound"></div>
+    </div>
+
+    <button id="t2SubmitFinal" class="nb-btn nb-btn-dark" style="max-width:500px;display:none" onclick="finishT2()">✓
+      I'm Done — Check My Score</button>
+    <button class="nb-btn nb-btn-ghost" style="max-width:500px" onclick="resetProgress()">↩ Switch pathway</button>
+  </div>
+
+  <!-- ═══════════════════════════════════
+     TRACK 3 — SPACE / AMONG US
+═══════════════════════════════════ -->
+  <div id="screen-t3">
+    <div class="stars-bg" id="starsBg"></div>
+    <div class="t3-content">
+      <span class="t3-ship">🚀</span>
+      <div class="t3-title" id="t3Title">ENDO STATION</div>
+      <div class="t3-subtitle" id="t3Subtitle">Emergency Task Protocol · Active</div>
+
+      <!-- Intro (0 scanned) -->
+      <div class="t3-intro-box" id="t3IntroBox" style="display:none">
+        <div style="font-size:40px;margin-bottom:10px">👨‍🚀</div>
+        <div style="font-weight:700;font-size:18px;color:#7dd3fc">Welcome aboard, Crewmate.</div>
+        <p>The Endo Station has been compromised. Systems are failing across the campus. Your mission: locate and
+          complete all 8 emergency tasks hidden around the station to restore full operation.</p>
+        <p style="margin-top:10px;color:#64748b;font-family:var(--gm);font-size:11px">SCAN THE FIELD QR CODES TO
+          COMPLETE TASKS</p>
+      </div>
+
+      <!-- Latest task card -->
+      <div class="t3-card" id="t3TaskCard" style="display:none">
+        <div class="t3-card-label">Task Completed</div>
+        <div class="t3-task-name" id="t3TaskName"></div>
+        <div class="t3-task-img" id="t3TaskImg"></div>
+        <div class="t3-task-desc" id="t3TaskDesc"></div>
+      </div>
+
+      <div class="t3-progress-text" id="t3ProgressText" style="display:none"></div>
+
+      <!-- Task manifest -->
+      <div class="t3-card" id="t3Manifest" style="display:none">
+        <div class="t3-card-label">📋 Task Manifest — Endo Station</div>
+        <div id="t3TaskList"></div>
+      </div>
+
+      <!-- Complete -->
+      <div class="t3-complete-banner" id="t3CompleteBanner" style="display:none">
+        <div style="font-size:40px;margin-bottom:8px">✅</div>
+        <div class="t3-title">All Systems Restored!</div>
+        <div style="font-size:13px;color:#86efac;margin-top:8px;font-family:var(--gs)">Endo Station is operational. Head
+          to the GDGoC booth and show this screen!</div>
+      </div>
+
+      <button class="t3-btn" onclick="resetProgress()">↩ Switch pathway</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+     TRACK 4 — WORDLE
+═══════════════════════════════════ -->
+  <div id="screen-t4">
+    <div
+      style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;margin-bottom:14px">
+      <img src="endo.png" style="height:32px;object-fit:contain" alt="" onerror="this.style.display='none'">
+      <div class="nb-track-badge" id="t4Badge"></div>
+    </div>
+
+    <!-- Wordle UI -->
+    <div class="nb-card" id="t4WordleCard" style="max-width:500px;display:none">
+      <div class="nb-label" id="t4WordleLabel">Wordle #1 of 8</div>
+      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:14px" id="t4Instruction"></div>
+      <div class="wordle-grid" id="wordleGrid" style="margin-bottom:10px"></div>
+      <div id="t4Msg" class="msg-box" style="display:none;margin-top:8px"></div>
+    </div>
+    <div class="t4-hint-box" id="t4HintBox"></div>
+    <div class="wordle-keyboard" id="wordleKeyboard" style="display:none"></div>
+
+    <!-- "Go find the QR" state -->
+    <div class="t4-found-location" id="t4FoundLocation" style="display:none">
+      <div style="font-family:var(--gm);font-size:10px;letter-spacing:2px;color:#888;margin-bottom:6px">LOCATION
+        UNLOCKED</div>
+      <div class="word" id="t4LocationWord"></div>
+      <p>Go find the QR code there and scan it to continue.</p>
+      <div style="font-family:var(--gm);font-size:10px;color:#555;margin-top:10px" id="t4LocationProgress"></div>
+    </div>
+
+    <div class="t4-dots" id="t4Dots" style="margin-top:4px"></div>
+    <button class="nb-btn nb-btn-ghost" style="max-width:500px" onclick="resetProgress()">↩ Switch pathway</button>
+  </div>
+
+  <!-- ═══════════════════════════════════
+     TRACK 5 — SLIDING PUZZLE
+═══════════════════════════════════ -->
+  <div id="screen-t5">
+    <div
+      style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;margin-bottom:14px">
+      <img src="endo.png" style="height:32px;object-fit:contain" alt="" onerror="this.style.display='none'">
+      <div class="nb-track-badge" id="t5Badge"></div>
+    </div>
+
+    <div id="t5StartCard" class="nb-card" style="max-width:500px;text-align:center;display:none">
+      <div class="big-icon">🖼️</div>
+      <div class="big-title" style="font-size:28px">Pathway Activated!</div>
+      <div class="big-body" style="margin-top:8px">You've chosen the <strong>Mosaic</strong> pathway. Hunt down 8 QR
+        codes hidden around campus — each one reveals a piece of a mystery image. Collect them all, then solve the
+        sliding puzzle!</div>
+    </div>
+
+    <div class="nb-card" id="t5CollectionCard" style="max-width:500px;display:none">
+      <div class="nb-label" id="t5CollectedLabel">Pieces Collected: 0 / 8</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="t5Collection"></div>
+      <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid)" id="t5Status"></div>
+    </div>
+
+    <div id="t5PuzzleSection"
+      style="display:none;width:100%;max-width:500px;flex-direction:column;gap:14px;align-items:center">
+      <div class="nb-card" style="max-width:500px;width:100%;text-align:center">
+        <div class="nb-label">Slide tiles to complete the image — empty tile is bottom-right in solved position</div>
+        <div class="puzzle-container">
+          <div class="puzzle-grid" id="puzzleGrid"></div>
+        </div>
+      </div>
+      <div id="t5Msg" class="msg-box" style="display:none;max-width:500px;width:100%"></div>
+      <button class="nb-btn nb-btn-ghost" style="max-width:500px" onclick="shufflePuzzle()">🔀 Shuffle Puzzle</button>
+    </div>
+
+    <button class="nb-btn nb-btn-ghost" style="max-width:500px" onclick="resetProgress()">↩ Switch pathway</button>
+  </div>
+
+  <!-- ═══════════════════════════════════
+     TRACK 6 — RICKROLL
+═══════════════════════════════════ -->
+  <div id="screen-t6">
+    <div class="nb-card" style="max-width:500px;text-align:center;margin-top:40px">
+      <div style="font-size:48px;margin-bottom:12px">⚡</div>
+      <div style="font-weight:700;font-size:28px">Sigma Productivity Quest</div>
+      <div style="font-family:var(--gm);font-size:11px;color:var(--ink-mid);margin:10px 0;letter-spacing:1px">
+        INITIALISING HYPER-OPTIMISATION PROTOCOL...</div>
+      <div class="t6-fake-bar">
+        <div class="t6-fake-fill"></div>
+      </div>
+      <div style="font-family:var(--gm);font-size:11px;color:var(--ink-mid)" id="t6Status">Calibrating sigma
+        frequencies...</div>
+    </div>
+  </div>
+
+  <script>
+    /* ════════════════════════════════════════════════
+       DATA
+    ════════════════════════════════════════════════ */
+    const TRACKS = {
+      1: { name: "Cipher", emoji: "🔡", color: "#4285F4", light: "#d2e3fc", desc: "Collect 8 words, arrange them into the correct sentence." },
+      2: { name: "Lexicon", emoji: "🔤", color: "#34A853", light: "#ceead6", desc: "Collect 8 letters, form as many words as you can." },
+      3: { name: "Crewmate", emoji: "🚀", color: "#7c3aed", light: "#ede9fe", desc: "Complete 8 emergency tasks hidden around the station." },
+      4: { name: "Wordle", emoji: "🟩", color: "#EA4335", light: "#fad2cf", desc: "Solve a Wordle to find each QR location. Scan to unlock the next." },
+      5: { name: "Mosaic", emoji: "🖼️", color: "#f59e0b", light: "#fef3c7", desc: "Collect 8 image pieces, then solve the sliding puzzle." },
+      6: { name: "Σ Quest", emoji: "⚡", color: "#64748b", light: "#f1f5f9", desc: "The easiest quest. Guaranteed productivity gains." },
+    };
+
+    // TRACK 1 — Cipher
+    const T1_SENTENCE = ["technology", "connects", "us", "and", "builds", "a", "better", "world"];
+    const T1_CLUES = {
+      "T1_C1_A7x2": { track: 1, clue: 1, word: "technology" },
+      "T1_C2_B3m9": { track: 1, clue: 2, word: "connects" },
+      "T1_C3_C8p4": { track: 1, clue: 3, word: "us" },
+      "T1_C4_D2k7": { track: 1, clue: 4, word: "and" },
+      "T1_C5_E5n1": { track: 1, clue: 5, word: "builds" },
+      "T1_C6_F9q6": { track: 1, clue: 6, word: "a" },
+      "T1_C7_G1r3": { track: 1, clue: 7, word: "better" },
+      "T1_C8_H4s8": { track: 1, clue: 8, word: "world" },
+    };
+
+    // TRACK 2 — Lexicon (letters spell GDGOCMUD)
+    const T2_LETTERS = ["G", "D", "G", "O", "C", "M", "U", "D"];
+    const T2_MIN_WORDS = 5;
+    const T2_CLUES = {
+      "T2_C1_J6t5": { track: 2, clue: 1, letter: "G" },
+      "T2_C2_K2u9": { track: 2, clue: 2, letter: "D" },
+      "T2_C3_L8v4": { track: 2, clue: 3, letter: "G" },
+      "T2_C4_M3w7": { track: 2, clue: 4, letter: "O" },
+      "T2_C5_N7x1": { track: 2, clue: 5, letter: "C" },
+      "T2_C6_P1y6": { track: 2, clue: 6, letter: "M" },
+      "T2_C7_Q5z2": { track: 2, clue: 7, letter: "U" },
+      "T2_C8_R9a8": { track: 2, clue: 8, letter: "D" },
+    };
+
+    // TRACK 3 — Crewmate
+    const T3_TASKS = [
+      { name: "The Stairs", img: "t3_img1.jpg", desc: "Suspicious activity detected near the stairwell. Task logged — area secured." },
+      { name: "The Pantry", img: "t3_img2.jpg", desc: "Supply check complete. All snacks accounted for. Pantry cleared." },
+      { name: "The Lobby", img: "t3_img3.jpg", desc: "Entry point scanned. No impostors spotted. Lobby secure." },
+      { name: "The Games Area", img: "t3_img4.jpg", desc: "Recreational zone checked. No one hiding behind the foosball table. Clear." },
+      { name: "The Rest Zone", img: "t3_img5.jpg", desc: "Crewmates resting safely. Vital signs normal. Zone secured." },
+      { name: "Xbox Station", img: "t3_img6.jpg", desc: "Controllers inventoried. All consoles operational. Station clear." },
+      { name: "Jenga Tower", img: "t3_img7.jpg", desc: "Structural integrity confirmed. Tower standing — for now." },
+      { name: "The Doors", img: "t3_img8.jpg", desc: "All entry and exit points sealed. The impostor cannot escape." },
+    ];
+    const T3_CLUES = {
+      "T3_C1_S4b3": { track: 3, clue: 1 },
+      "T3_C2_T8c7": { track: 3, clue: 2 },
+      "T3_C3_U2d5": { track: 3, clue: 3 },
+      "T3_C4_V6e9": { track: 3, clue: 4 },
+      "T3_C5_W1f4": { track: 3, clue: 5 },
+      "T3_C6_X5g8": { track: 3, clue: 6 },
+      "T3_C7_Y9h2": { track: 3, clue: 7 },
+      "T3_C8_Z3i6": { track: 3, clue: 8 },
+    };
+
+    // TRACK 4 — Wordle
+    // words[i] = answer for wordle i+1; correct guess → location of QR code i+1
+    const T4_WORDS = ["stairs", "pantry", "lobby", "games", "rest", "xbox", "jenga", "doors"];
+    const T4_HINTS = [
+      "Think vertically. Not the lift.",
+      "Where hunger goes to hide.",
+      "The first face of the building.",
+      "Where competition lives.",
+      "Sit. Breathe. Chill.",
+      "Buttons and controllers.",
+      "Don't let it fall.",
+      "The way in, or the way out.",
+    ];
+    const T4_CLUES = {
+      "T4_C1_A2j7": { track: 4, clue: 1 },
+      "T4_C2_B6k1": { track: 4, clue: 2 },
+      "T4_C3_C9l5": { track: 4, clue: 3 },
+      "T4_C4_D4m9": { track: 4, clue: 4 },
+      "T4_C5_E8n3": { track: 4, clue: 5 },
+      "T4_C6_F3o7": { track: 4, clue: 6 },
+      "T4_C7_G7p2": { track: 4, clue: 7 },
+      "T4_C8_H1q6": { track: 4, clue: 8 },
+    };
+
+    // TRACK 5 — Mosaic
+    // 5 image sets, each with 8 pieces. Empty tile = position index 8 (bottom-right) in solved state.
+    // File naming: puzzle_img{N}_p{M}.jpg  (N=1-5, M=1-8, M maps to grid position 0-7)
+    // Grid positions: 0=top-left, 1=top-center, 2=top-right, 3=mid-left, 4=center,
+    //                5=mid-right, 6=bot-left, 7=bot-center, 8=EMPTY(bot-right)
+    const T5_NUM_SETS = 5;
+    const T5_CLUES = {
+      "T5_C1_J5r4": { track: 5, clue: 1 },
+      "T5_C2_K9s8": { track: 5, clue: 2 },
+      "T5_C3_L3t2": { track: 5, clue: 3 },
+      "T5_C4_M7u6": { track: 5, clue: 4 },
+      "T5_C5_N2v1": { track: 5, clue: 5 },
+      "T5_C6_P6w5": { track: 5, clue: 6 },
+      "T5_C7_Q1x9": { track: 5, clue: 7 },
+      "T5_C8_R4y3": { track: 5, clue: 8 },
+    };
+    function t5ImgSrc(imgSet, pieceNum) { return `puzzle_img${imgSet}_p${pieceNum}.jpg`; }
+
+    // TRACK 6 — Rickroll (only a start QR, no clue QRs)
+    const T6_START_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+
+    // Master clue lookup
+    const ALL_CLUES = { ...T1_CLUES, ...T2_CLUES, ...T3_CLUES, ...T4_CLUES, ...T5_CLUES };
+
+    /* ════════════════════════════════════════════════
+       STATE
+    ════════════════════════════════════════════════ */
+    const getState = () => { try { return JSON.parse(localStorage.getItem("endoQuest") || "null"); } catch { return null; } };
+    const saveState = s => localStorage.setItem("endoQuest", JSON.stringify(s));
+    function resetProgress() { localStorage.removeItem("endoQuest"); window.location.href = window.location.pathname; }
+    function goBack() {
+      const s = getState();
+      if (!s) { showWelcome(); return; }
+      routeToTrack(s);
+    }
+    function showScreen(id) {
+      document.querySelectorAll('[id^="screen-"]').forEach(el => el.classList.remove("active-screen"));
+      document.getElementById(id).classList.add("active-screen");
+    }
+
+    /* ════════════════════════════════════════════════
+       WELCOME
+    ════════════════════════════════════════════════ */
+    function showWelcome() {
+      showScreen("screen-welcome");
+      const grid = document.getElementById("trackGrid");
+      grid.innerHTML = "";
+      [1, 2, 3, 4, 5, 6].forEach(n => {
+        const t = TRACKS[n];
+        const card = document.createElement("div");
+        card.className = "track-card";
+        card.innerHTML = `
+      <div class="tc-qr-block">
+        <img src="start_qr_${n}.png" alt="Scan to start pathway ${n}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="tc-qr-fallback" style="display:none">
+          <div class="qr-icon">▦</div>
+          <div class="qr-label" style="color:${t.color}">start_qr_${n}.png</div>
+          <div class="qr-label">Drop QR image here</div>
+        </div>
+      </div>
+      <div class="tc-info">
+        <div class="tc-bar" style="background:${t.color}"></div>
+        <div class="tc-num">PATHWAY ${n}</div>
+        <div class="tc-name">${t.emoji} ${t.name}</div>
+        <div class="tc-desc">${t.desc}</div>
+        <div class="tc-clues">${n === '6' || n === 6 ? 'just one scan — if you dare' : '8 QR codes around campus'}</div>
+      </div>
+    `;
+        grid.appendChild(card);
+      });
+    }
+
+    /* ════════════════════════════════════════════════
+       ROUTER
+    ════════════════════════════════════════════════ */
+    function routeToTrack(state, fromStart = false) {
+      switch (state.track) {
+        case 1: renderT1(state, fromStart); break;
+        case 2: renderT2(state, fromStart); break;
+        case 3: renderT3(state, fromStart); break;
+        case 4: renderT4(state, fromStart); break;
+        case 5: renderT5(state, fromStart); break;
+        case 6: renderT6(); break;
+      }
+    }
+
+    /* ════════════════════════════════════════════════
+       START QR HANDLER
+    ════════════════════════════════════════════════ */
+    function handleStart(trackNum) {
+      const existing = getState();
+      // Already on a different track
+      if (existing && existing.track !== trackNum) {
+        showScreen("screen-wrong-track");
+        const mt = TRACKS[existing.track], nt = TRACKS[trackNum];
+        document.getElementById("wrongBody").innerHTML =
+          `You're already on <strong>${mt.emoji} ${mt.name}</strong>. Reset to switch pathways.`;
+        return;
+      }
+      // Already started this track — just route to progress
+      if (existing && existing.track === trackNum) {
+        routeToTrack(existing);
+        return;
+      }
+      // Fresh start
+      let state = { track: trackNum, scanned: {} };
+      if (trackNum === 4) { state.wordlesSolved = 0; state.qrScanned = 0; state.t4Guesses = []; }
+      if (trackNum === 5) { state.t5ImageSet = Math.floor(Math.random() * T5_NUM_SETS) + 1; }
+      saveState(state);
+      window.history.replaceState({}, "", window.location.pathname);
+      if (trackNum === 6) { renderT6(); return; }
+      routeToTrack(state, true);
+    }
+
+    /* ════════════════════════════════════════════════
+       CLUE SCAN HANDLER
+    ════════════════════════════════════════════════ */
+    function handleClue(token) {
+      const clue = ALL_CLUES[token];
+      if (!clue) { showScreen("screen-invalid"); return; }
+
+      let state = getState();
+      if (!state) {
+        // Scanned a field QR without scanning start QR first
+        showScreen("screen-invalid"); return;
+      }
+
+      if (state.track !== clue.track) {
+        showScreen("screen-wrong-track");
+        const mt = TRACKS[state.track], ct = TRACKS[clue.track];
+        document.getElementById("wrongBody").innerHTML =
+          `This QR is from <strong>${ct.emoji} ${ct.name}</strong>. You're on <strong>${mt.emoji} ${mt.name}</strong>.`;
+        return;
+      }
+
+      if (state.scanned[token]) { showScreen("screen-already-scanned"); return; }
+
+      // Track-specific scan logic
+      if (clue.track === 1) {
+        const data = T1_CLUES[token];
+        state.scanned[token] = { clue: data.clue, word: data.word };
+        saveState(state); window.history.replaceState({}, "", window.location.pathname);
+        renderT1(state, false);
+      }
+      else if (clue.track === 2) {
+        const data = T2_CLUES[token];
+        state.scanned[token] = { clue: data.clue, letter: data.letter };
+        saveState(state); window.history.replaceState({}, "", window.location.pathname);
+        renderT2(state, false);
+      }
+      else if (clue.track === 3) {
+        state.scanned[token] = { clue: clue.clue };
+        state.lastClue = clue.clue;
+        saveState(state); window.history.replaceState({}, "", window.location.pathname);
+        renderT3(state, false);
+      }
+      else if (clue.track === 4) {
+        handleT4ClueScan(token, clue, state);
+      }
+      else if (clue.track === 5) {
+        state.scanned[token] = { clue: clue.clue };
+        saveState(state); window.history.replaceState({}, "", window.location.pathname);
+        renderT5(state, false);
+      }
+    }
+
+    /* ════════════════════════════════════════════════
+       TRACK 1 — CIPHER
+    ════════════════════════════════════════════════ */
+    let t1Answer = [], t1BankWords = [];
+
+    function renderT1(state, fromStart = false) {
+      showScreen("screen-t1");
+      const t = TRACKS[1];
+      setBadge("t1Badge", t);
+      const scanned = state.scanned || {};
+      const count = Object.keys(scanned).length;
+
+      if (fromStart || count === 0) {
+        show("t1StartCard"); hide("t1ProgressCard"); hide("t1PuzzleSection");
+        return;
+      }
+      hide("t1StartCard"); show("t1ProgressCard");
+
+      const words = Array.from({ length: 8 }, (_, i) => {
+        const e = Object.values(scanned).find(v => v.clue === i + 1);
+        return e ? e.word : null;
+      });
+
+      const chips = document.getElementById("t1WordChips");
+      chips.innerHTML = "";
+      words.forEach((w, i) => {
+        const ch = document.createElement("div");
+        ch.className = `frag-chip ${w ? 'found' : 'empty'}`;
+        if (w) ch.style.background = t.color;
+        ch.textContent = w || `#${i + 1}`;
+        chips.appendChild(ch);
+      });
+      document.getElementById("t1Status").textContent =
+        count < 8 ? `${count}/8 words collected — keep scanning!` : "All 8 words collected! Arrange them below.";
+
+      if (count >= 8) {
+        show("t1PuzzleSection");
+        initT1Puzzle(words.filter(Boolean));
+      } else {
+        hide("t1PuzzleSection");
+      }
+    }
+
+    function initT1Puzzle(words) {
+      if (t1Answer.length === 0 && t1BankWords.length === 0) {
+        t1BankWords = [...words].sort(() => Math.random() - 0.5);
+        t1Answer = [];
+      }
+      renderT1Puzzle();
+    }
+    function renderT1Puzzle() {
+      const aArea = document.getElementById("t1AnswerArea");
+      const bank = document.getElementById("t1Bank");
+      aArea.innerHTML = ""; bank.innerHTML = "";
+      t1Answer.forEach((w, i) => {
+        const tile = document.createElement("div");
+        tile.className = "t1-tile in-answer";
+        tile.textContent = w;
+        tile.onclick = () => { t1BankWords.push(w); t1Answer.splice(i, 1); renderT1Puzzle(); };
+        aArea.appendChild(tile);
+      });
+      t1BankWords.forEach((w, i) => {
+        const tile = document.createElement("div");
+        tile.className = "t1-tile";
+        tile.textContent = w;
+        tile.onclick = () => { t1Answer.push(w); t1BankWords.splice(i, 1); renderT1Puzzle(); };
+        bank.appendChild(tile);
+      });
+    }
+    function resetT1Puzzle() {
+      const s = getState();
+      const scanned = s.scanned || {};
+      const words = Array.from({ length: 8 }, (_, i) => { const e = Object.values(scanned).find(v => v.clue === i + 1); return e ? e.word : null; }).filter(Boolean);
+      t1Answer = []; t1BankWords = [...words].sort(() => Math.random() - 0.5);
+      renderT1Puzzle();
+      hide("t1Feedback");
+    }
+    function checkT1Answer() {
+      const fb = document.getElementById("t1Feedback");
+      if (t1Answer.length !== 8) {
+        showMsg("t1Feedback", "err", "Arrange all 8 words first!"); return;
+      }
+      const attempt = t1Answer.join(" ");
+      if (attempt.toLowerCase() === T1_SENTENCE.join(" ").toLowerCase()) {
+        showMsg("t1Feedback", "ok", "✅ Correct! Head to the booth!");
+        const s = getState(); s.completed = true; saveState(s);
+        setTimeout(() => showComplete(s, `"${attempt}"`), 1500);
+      } else {
+        showMsg("t1Feedback", "err", "❌ Not quite — try a different order!");
+      }
+    }
+
+    /* ════════════════════════════════════════════════
+       TRACK 2 — LEXICON
+    ════════════════════════════════════════════════ */
+    function isValidT2Word(word, letters) {
+      if (word.length < 3) return false;
+      const pool = [...letters];
+      for (const ch of word.toUpperCase()) {
+        const idx = pool.indexOf(ch);
+        if (idx === -1) return false;
+        pool.splice(idx, 1);
+      }
+      return true;
+    }
+    function renderT2(state, fromStart = false) {
+      showScreen("screen-t2");
+      const t = TRACKS[2]; setBadge("t2Badge", t);
+      const scanned = state.scanned || {};
+      const count = Object.keys(scanned).length;
+
+      if (fromStart || count === 0) {
+        show("t2StartCard"); hide("t2MainCard"); hide("t2InputCard");
+        document.getElementById("t2SubmitFinal").style.display = "none";
+        return;
+      }
+      hide("t2StartCard"); show("t2MainCard");
+
+      const letters = Array.from({ length: 8 }, (_, i) => { const e = Object.values(scanned).find(v => v.clue === i + 1); return e ? e.letter : null; });
+      const lettersDiv = document.getElementById("t2Letters");
+      lettersDiv.innerHTML = "";
+      letters.forEach((l, i) => {
+        const tile = document.createElement("div");
+        tile.className = `t2-letter-tile ${l ? 'revealed' : 'hidden'}`;
+        tile.style.background = l ? TRACKS[2].color : "";
+        tile.style.color = l ? "#fff" : "#ccc";
+        tile.textContent = l || "?";
+        lettersDiv.appendChild(tile);
+      });
+      document.getElementById("t2Status").textContent =
+        count < 8 ? `${count}/8 letters collected — keep scanning!` : "All 8 letters collected! Make as many words as you can.";
+
+      if (count >= 8) {
+        show("t2InputCard");
+        document.getElementById("t2SubmitFinal").style.display = "flex";
+        renderT2Words(state.t2words || [], letters.filter(Boolean));
+      } else {
+        hide("t2InputCard");
+        document.getElementById("t2SubmitFinal").style.display = "none";
+      }
+    }
+    function renderT2Words(found, letters) {
+      const div = document.getElementById("t2WordsFound");
+      div.innerHTML = "";
+      found.forEach(w => {
+        const chip = document.createElement("div");
+        chip.className = "t2-found-chip good";
+        chip.textContent = w;
+        div.appendChild(chip);
+      });
+      const pct = Math.min(100, (found.length / T2_MIN_WORDS) * 100);
+      document.getElementById("t2ScoreFill").style.width = pct + "%";
+      document.getElementById("t2ScoreLabel").textContent = `${found.length} / ${T2_MIN_WORDS} words to win`;
+    }
+    function submitT2Word() {
+      const input = document.getElementById("t2Input");
+      const word = input.value.trim().toUpperCase();
+      if (!word) return;
+      const s = getState();
+      const scanned = s.scanned || {};
+      const letters = Array.from({ length: 8 }, (_, i) => { const e = Object.values(scanned).find(v => v.clue === i + 1); return e ? e.letter : null; }).filter(Boolean);
+      const found = s.t2words || [];
+      if (found.includes(word)) { t2FlashErr("Already found that one!"); input.value = ""; return; }
+      if (!isValidT2Word(word, letters)) { t2FlashErr("Use only your 8 letters (min 3)!"); input.value = ""; return; }
+      found.push(word); s.t2words = found; saveState(s);
+      renderT2Words(found, letters);
+      input.value = "";
+    }
+    function t2FlashErr(msg) {
+      const div = document.getElementById("t2WordsFound");
+      const e = document.createElement("div");
+      e.className = "t2-found-chip"; e.style.cssText = "color:#EA4335;border-color:#EA4335";
+      e.textContent = msg; div.prepend(e);
+      setTimeout(() => e.remove(), 2000);
+    }
+    function finishT2() {
+      const s = getState();
+      const found = s.t2words || [];
+      if (found.length >= T2_MIN_WORDS) {
+        s.completed = true; saveState(s);
+        showComplete(s, `${found.length} words found!`);
+      } else {
+        const el = document.getElementById("t2ScoreLabel");
+        el.style.color = "#EA4335";
+        el.textContent = `Need ${T2_MIN_WORDS - found.length} more word(s) to win!`;
+      }
+    }
+
+    /* ════════════════════════════════════════════════
+       TRACK 3 — SPACE / AMONG US
+    ════════════════════════════════════════════════ */
+    function spawnStars() {
+      const bg = document.getElementById("starsBg");
+      if (bg.children.length > 0) return;
+      for (let i = 0; i < 120; i++) {
+        const s = document.createElement("div");
+        s.className = "star";
+        const sz = Math.random() * 2 + 0.5;
+        s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-duration:${2 + Math.random() * 4}s;animation-delay:${Math.random() * 4}s`;
+        bg.appendChild(s);
+      }
+    }
+    function renderT3(state, fromStart = false) {
+      showScreen("screen-t3");
+      spawnStars();
+      const scanned = state.scanned || {};
+      const count = Object.keys(scanned).length;
+
+      if (fromStart || count === 0) {
+        document.getElementById("t3Title").textContent = "ENDO STATION";
+        document.getElementById("t3Subtitle").textContent = "Emergency Task Protocol · Active";
+        show("t3IntroBox"); hide("t3TaskCard"); hide("t3Manifest");
+        hide("t3ProgressText"); hide("t3CompleteBanner");
+        return;
+      }
+      hide("t3IntroBox");
+
+      const latestClue = state.lastClue;
+      if (latestClue) {
+        const task = T3_TASKS[latestClue - 1];
+        document.getElementById("t3TaskName").textContent = task.name;
+        document.getElementById("t3TaskDesc").textContent = task.desc;
+        const imgEl = document.getElementById("t3TaskImg");
+        imgEl.innerHTML = `<img src="${task.img}" alt="${task.name}" onerror="this.parentElement.innerHTML='<div class=&quot;placeholder-text&quot;>[ ${task.name} — add ${task.img} to your repo ]</div>'">`;
+        show("t3TaskCard");
+      }
+
+      const prog = document.getElementById("t3ProgressText");
+      prog.textContent = `${count} / 8 TASKS COMPLETE`;
+      show("t3ProgressText");
+
+      const list = document.getElementById("t3TaskList");
+      list.innerHTML = "";
+      T3_TASKS.forEach((task, i) => {
+        const done = Object.values(scanned).some(v => v.clue === i + 1);
+        const item = document.createElement("div");
+        item.className = `t3-task-item ${done ? 'done' : 'pending'}`;
+        item.innerHTML = `<div class="t3-task-dot"></div><div class="t3-task-item-name">${done ? '✓ ' : ' '}${task.name}</div>`;
+        list.appendChild(item);
+      });
+      show("t3Manifest");
+
+      if (count >= 8) {
+        show("t3CompleteBanner");
+        document.getElementById("t3Title").textContent = "MISSION COMPLETE";
+        document.getElementById("t3Subtitle").textContent = "All Systems Restored";
+        const s = getState(); if (!s.completed) { s.completed = true; saveState(s); }
+      }
+    }
+
+    /* ════════════════════════════════════════════════
+       TRACK 4 — WORDLE (GATED)
+    ════════════════════════════════════════════════ */
+    // State: { track:4, wordlesSolved:0, qrScanned:0, scanned:{}, t4Guesses:[] }
+    // wordlesSolved === qrScanned → show wordle #(wordlesSolved+1)
+    // wordlesSolved > qrScanned  → show "go find QR" screen
+
+    let t4HintTimer = null;
+    let t4WordleActive = { word: "", guesses: [], currentGuess: "", done: false };
+
+    function renderT4(state, fromStart = false) {
+      showScreen("screen-t4");
+      const t = TRACKS[4]; setBadge("t4Badge", t);
+      if (t4HintTimer) { clearTimeout(t4HintTimer); t4HintTimer = null; }
+
+      const solved = state.wordlesSolved || 0;
+      const scanned = state.qrScanned || 0;
+
+      renderT4Dots(solved, scanned);
+
+      // All done
+      if (solved >= 8 && scanned >= 8) {
+        showComplete(state, "All 8 Wordles solved! 🟩"); return;
+      }
+
+      // Solved a wordle, need to go find the QR
+      if (solved > scanned) {
+        hide("t4WordleCard"); hide("wordleKeyboard"); hide("t4HintBox");
+        show("t4FoundLocation");
+        const word = T4_WORDS[scanned].toUpperCase();
+        document.getElementById("t4LocationWord").textContent = word;
+        document.getElementById("t4LocationProgress").textContent =
+          `QR ${scanned + 1} of 8 — scan it to unlock the next Wordle`;
+        return;
+      }
+
+      // Need to solve next wordle
+      hide("t4FoundLocation"); show("t4WordleCard"); show("wordleKeyboard");
+
+      const wordleNum = solved + 1;
+      const word = T4_WORDS[solved].toUpperCase();
+      document.getElementById("t4WordleLabel").textContent = `Wordle #${wordleNum} of 8`;
+      document.getElementById("t4Instruction").textContent =
+        `Guess the ${word.length}-letter word. It's the location of QR code #${wordleNum}.`;
+
+      // Restore or init
+      const savedGuesses = state.t4Guesses || [];
+      t4WordleActive = { word, guesses: [...savedGuesses], currentGuess: "", done: false };
+
+      renderWordleGrid();
+      renderWordleKeyboard();
+      hide("t4Msg");
+
+      // Hint timer — 120s
+      const hintBox = document.getElementById("t4HintBox");
+      hintBox.style.display = "none";
+      t4HintTimer = setTimeout(() => {
+        hintBox.innerHTML = `💡 <strong>Hint:</strong> ${T4_HINTS[solved]}`;
+        hintBox.style.display = "block";
+      }, 120000);
+    }
+
+    function renderT4Dots(solved, scanned) {
+      const dots = document.getElementById("t4Dots");
+      dots.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        const d = document.createElement("div");
+        if (i < scanned) d.className = "t4-dot done";
+        else if (i < solved) d.className = "t4-dot waiting";
+        else if (i === solved) d.className = "t4-dot current";
+        else d.className = "t4-dot pending";
+        dots.appendChild(d);
+      }
+    }
+
+    function renderWordleGrid() {
+      const grid = document.getElementById("wordleGrid");
+      grid.innerHTML = "";
+      const { word, guesses, currentGuess } = t4WordleActive;
+      const len = word.length;
+      for (let r = 0; r < 6; r++) {
+        const row = document.createElement("div");
+        row.className = "wordle-row";
+        for (let c = 0; c < len; c++) {
+          const cell = document.createElement("div");
+          cell.className = "wordle-cell";
+          cell.id = `wc-${r}-${c}`;
+          if (r < guesses.length) {
+            const res = scoreGuess(guesses[r], word);
+            cell.textContent = guesses[r][c];
+            cell.className = `wordle-cell ${res[c]}`;
+          } else if (r === guesses.length) {
+            cell.textContent = currentGuess[c] || "";
+            if (currentGuess[c]) cell.className = "wordle-cell filled";
+          }
+          row.appendChild(cell);
+        }
+        grid.appendChild(row);
+      }
+    }
+
+    function scoreGuess(guess, word) {
+      const result = Array(word.length).fill("absent");
+      const wordArr = [...word], used = Array(word.length).fill(false);
+      [...guess].forEach((ch, i) => { if (ch === wordArr[i]) { result[i] = "correct"; used[i] = true; } });
+      [...guess].forEach((ch, i) => {
+        if (result[i] === "correct") return;
+        const wi = wordArr.findIndex((wch, j) => !used[j] && wch === ch);
+        if (wi !== -1) { result[i] = "present"; used[wi] = true; }
+      });
+      return result;
+    }
+
+    function renderWordleKeyboard() {
+      const kb = document.getElementById("wordleKeyboard");
+      kb.innerHTML = "";
+      const rows = [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "⌫"]];
+      const keyStates = {};
+      t4WordleActive.guesses.forEach(g => {
+        const res = scoreGuess(g, t4WordleActive.word);
+        [...g].forEach((ch, i) => {
+          const s = res[i];
+          if (!keyStates[ch] || (keyStates[ch] === "absent" && s !== "absent") || (keyStates[ch] === "present" && s === "correct"))
+            keyStates[ch] = s;
+        });
+      });
+      rows.forEach(row => {
+        const rowEl = document.createElement("div");
+        rowEl.className = "wordle-key-row";
+        row.forEach(k => {
+          const btn = document.createElement("button");
+          btn.className = `w-key${k.length > 1 ? ' wide' : ''} ${keyStates[k] || ""}`;
+          btn.textContent = k;
+          btn.onclick = () => handleWordleKey(k);
+          rowEl.appendChild(btn);
+        });
+        kb.appendChild(rowEl);
+      });
+    }
+
+    function handleWordleKey(key) {
+      if (t4WordleActive.done) return;
+      const { word } = t4WordleActive;
+      hide("t4Msg");
+
+      if (key === "⌫" || key === "BACKSPACE") {
+        t4WordleActive.currentGuess = t4WordleActive.currentGuess.slice(0, -1);
+      } else if (key === "ENTER") {
+        if (t4WordleActive.currentGuess.length !== word.length) {
+          showMsg("t4Msg", "err", `Word must be ${word.length} letters!`); renderWordleGrid(); return;
+        }
+        const guess = t4WordleActive.currentGuess.toUpperCase();
+        t4WordleActive.guesses.push(guess);
+        t4WordleActive.currentGuess = "";
+        // Persist guesses
+        const s = getState(); s.t4Guesses = t4WordleActive.guesses; saveState(s);
+
+        if (guess === word) {
+          // SOLVED
+          t4WordleActive.done = true;
+          renderWordleGrid(); renderWordleKeyboard();
+          showMsg("t4Msg", "ok", `✅ Correct! Go find QR #${(s.wordlesSolved || 0) + 1} at that location!`);
+          if (t4HintTimer) { clearTimeout(t4HintTimer); t4HintTimer = null; }
+          document.getElementById("t4HintBox").style.display = "none";
+          s.wordlesSolved = (s.wordlesSolved || 0) + 1;
+          s.t4Guesses = []; // reset for next wordle
+          saveState(s);
+          setTimeout(() => renderT4(s), 1800);
+        } else if (t4WordleActive.guesses.length >= 6) {
+          // FAILED — reset silently after 2.5s
+          t4WordleActive.done = true;
+          renderWordleGrid(); renderWordleKeyboard();
+          showMsg("t4Msg", "err", `The word was ${word}. Try again!`);
+          setTimeout(() => {
+            t4WordleActive = { word, guesses: [], currentGuess: "", done: false };
+            const s2 = getState(); s2.t4Guesses = []; saveState(s2);
+            renderWordleGrid(); renderWordleKeyboard(); hide("t4Msg");
+          }, 2500);
+        } else {
+          renderWordleGrid(); renderWordleKeyboard();
+        }
+      } else if (/^[A-Z]$/.test(key)) {
+        if (t4WordleActive.currentGuess.length < word.length)
+          t4WordleActive.currentGuess += key;
+        renderWordleGrid();
+      }
+    }
+
+    // T4 clue scan: only accepted if they've solved the corresponding wordle
+    function handleT4ClueScan(token, clue, state) {
+      const solved = state.wordlesSolved || 0;
+      const scanned = state.qrScanned || 0;
+
+      if (solved <= scanned) {
+        // Haven't solved current wordle yet
+        window.history.replaceState({}, "", window.location.pathname);
+        renderT4(state);
+        showMsg("t4Msg", "err", "Solve the current Wordle first!");
+        show("t4WordleCard"); return;
+      }
+      if (clue.clue !== scanned + 1) {
+        window.history.replaceState({}, "", window.location.pathname);
+        renderT4(state);
+        showMsg("t4Msg", "err", `That's QR #${clue.clue}, but you need QR #${scanned + 1} right now.`);
+        show("t4WordleCard"); return;
+      }
+
+      state.scanned[token] = { clue: clue.clue };
+      state.qrScanned = (state.qrScanned || 0) + 1;
+      state.t4Guesses = [];
+      saveState(state);
+      window.history.replaceState({}, "", window.location.pathname);
+
+      if (state.qrScanned >= 8 && state.wordlesSolved >= 8) {
+        showComplete(state, "All 8 Wordles solved! 🟩");
+      } else {
+        renderT4(state);
+      }
+    }
+
+    // Physical keyboard
+    document.addEventListener("keydown", e => {
+      if (!document.getElementById("screen-t4").classList.contains("active-screen")) return;
+      if (e.key === "Enter") handleWordleKey("ENTER");
+      else if (e.key === "Backspace") handleWordleKey("⌫");
+      else if (/^[a-zA-Z]$/.test(e.key)) handleWordleKey(e.key.toUpperCase());
+    });
+
+    /* ════════════════════════════════════════════════
+       TRACK 5 — MOSAIC (SLIDING PUZZLE)
+       Empty tile = position index 8 (bottom-right) in solved state
+       Pieces 1-8 → grid positions 0-7
+    ════════════════════════════════════════════════ */
+    let puzzleArr = [], puzzleEmptyIdx = 8;
+
+    function renderT5(state, fromStart = false) {
+      showScreen("screen-t5");
+      const t = TRACKS[5]; setBadge("t5Badge", t);
+      const scanned = state.scanned || {};
+      const count = Object.keys(scanned).length;
+      const imgSet = state.t5ImageSet || 1;
+
+      if (fromStart || count === 0) {
+        show("t5StartCard"); hide("t5CollectionCard");
+        document.getElementById("t5PuzzleSection").style.display = "none";
+        return;
+      }
+      hide("t5StartCard"); show("t5CollectionCard");
+
+      document.getElementById("t5CollectedLabel").textContent = `Pieces Collected: ${count} / 8`;
+      const coll = document.getElementById("t5Collection");
+      coll.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        const e = Object.values(scanned).find(v => v.clue === i + 1);
+        if (e) {
+          const img = document.createElement("img");
+          img.className = "t5-piece-thumb";
+          img.src = t5ImgSrc(imgSet, i + 1);
+          img.alt = `Piece ${i + 1}`;
+          img.onerror = function () { this.outerHTML = `<div class="t5-piece-thumb" style="background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#666;font-family:var(--gm)">${i + 1}</div>`; };
+          coll.appendChild(img);
+        } else {
+          const el = document.createElement("div");
+          el.className = "t5-piece-thumb locked";
+          el.textContent = "🔒";
+          coll.appendChild(el);
+        }
+      }
+      document.getElementById("t5Status").textContent =
+        count < 8 ? `${count}/8 pieces — keep scanning!` : "All pieces collected! Solve the puzzle.";
+
+      const puzzleSec = document.getElementById("t5PuzzleSection");
+      if (count >= 8) {
+        puzzleSec.style.display = "flex";
+        if (!state.puzzleInit) {
+          initSlidingPuzzle(imgSet);
+          const s = getState(); s.puzzleInit = true; s.puzzleArr = puzzleArr; s.puzzleEmptyIdx = puzzleEmptyIdx; saveState(s);
+        } else {
+          puzzleArr = state.puzzleArr || [...Array(8).keys(), null];
+          puzzleEmptyIdx = puzzleArr.indexOf(null);
+          renderPuzzleGrid(imgSet);
+        }
+      } else {
+        puzzleSec.style.display = "none";
+      }
+    }
+
+    function initSlidingPuzzle(imgSet) {
+      // solved state: [0,1,2,3,4,5,6,7,null]  (null = empty at index 8)
+      puzzleArr = [0, 1, 2, 3, 4, 5, 6, 7, null];
+      puzzleEmptyIdx = 8;
+      for (let i = 0; i < 300; i++) {
+        const neighbors = getPuzzleNeighbors(puzzleEmptyIdx);
+        const pick = neighbors[Math.floor(Math.random() * neighbors.length)];
+        [puzzleArr[pick], puzzleArr[puzzleEmptyIdx]] = [puzzleArr[puzzleEmptyIdx], puzzleArr[pick]];
+        puzzleEmptyIdx = pick;
+      }
+      renderPuzzleGrid(imgSet);
+    }
+    function shufflePuzzle() {
+      const s = getState();
+      initSlidingPuzzle(s.t5ImageSet || 1);
+      s.puzzleArr = puzzleArr; s.puzzleEmptyIdx = puzzleEmptyIdx; saveState(s);
+    }
+    function getPuzzleNeighbors(idx) {
+      const col = idx % 3, row = Math.floor(idx / 3), res = [];
+      if (row > 0) res.push(idx - 3);
+      if (row < 2) res.push(idx + 3);
+      if (col > 0) res.push(idx - 1);
+      if (col < 2) res.push(idx + 1);
+      return res;
+    }
+    function renderPuzzleGrid(imgSet) {
+      const grid = document.getElementById("puzzleGrid");
+      if (!imgSet) { const s = getState(); imgSet = s && s.t5ImageSet ? s.t5ImageSet : 1; }
+      grid.innerHTML = "";
+      puzzleArr.forEach((piece, i) => {
+        const tile = document.createElement("div");
+        tile.className = `puzzle-tile${piece === null ? ' empty-tile' : ''}`;
+        if (piece !== null) {
+          // piece 0 → file p1, piece 1 → file p2, etc.
+          const img = document.createElement("img");
+          img.src = t5ImgSrc(imgSet, piece + 1);
+          img.alt = `Piece ${piece + 1}`;
+          img.onerror = function () {
+            this.remove();
+            tile.style.background = "#e0e0e0";
+            tile.innerHTML = `<span style="font-size:20px;color:#555">${piece + 1}</span>`;
+          };
+          tile.appendChild(img);
+          tile.onclick = () => clickPuzzleTile(i);
+        }
+        grid.appendChild(tile);
+      });
+    }
+    function clickPuzzleTile(idx) {
+      if (!getPuzzleNeighbors(puzzleEmptyIdx).includes(idx)) return;
+      [puzzleArr[idx], puzzleArr[puzzleEmptyIdx]] = [puzzleArr[puzzleEmptyIdx], puzzleArr[idx]];
+      puzzleEmptyIdx = puzzleArr.indexOf(null);
+      const s = getState(); const imgSet = s && s.t5ImageSet ? s.t5ImageSet : 1;
+      renderPuzzleGrid(imgSet);
+      s.puzzleArr = puzzleArr; s.puzzleEmptyIdx = puzzleEmptyIdx; saveState(s);
+      checkPuzzleSolved(s);
+    }
+    function checkPuzzleSolved(s) {
+      // Solved: [0,1,2,3,4,5,6,7,null]
+      const solved = puzzleArr.every((v, i) => i === 8 ? v === null : v === i);
+      if (solved) {
+        showMsg("t5Msg", "ok", "🎉 Puzzle solved! Head to the booth!");
+        s.completed = true; saveState(s);
+        setTimeout(() => showComplete(s, "Sliding puzzle solved! 🖼️"), 1500);
+      }
+    }
+
+    /* ════════════════════════════════════════════════
+       TRACK 6 — RICKROLL
+    ════════════════════════════════════════════════ */
+    const RICKROLL_MSGS = ["Calibrating sigma frequencies...", "Optimising grindset matrix...", "Syncing with the hustle cloud...", "Loading maximum productivity...", "Almost there, bestie...", "Engaging big brain mode..."];
+    function renderT6() {
+      showScreen("screen-t6");
+      let i = 0;
+      const status = document.getElementById("t6Status");
+      const iv = setInterval(() => { status.textContent = RICKROLL_MSGS[i++ % RICKROLL_MSGS.length]; }, 500);
+      setTimeout(() => { clearInterval(iv); window.location.href = T6_START_URL; }, 3200);
+    }
+
+    /* ════════════════════════════════════════════════
+       COMPLETE
+    ════════════════════════════════════════════════ */
+    function showComplete(state, resultText) {
+      showScreen("screen-complete");
+      const t = TRACKS[state.track];
+      document.getElementById("completePhrase").textContent = resultText || "Quest complete!";
+      const cb = document.getElementById("completeBadge");
+      cb.style.background = t.light; cb.style.borderColor = t.color;
+      cb.textContent = `${t.emoji} ${t.name}`;
+      spawnConfetti();
+    }
+
+    /* ════════════════════════════════════════════════
+       CONFETTI
+    ════════════════════════════════════════════════ */
+    function spawnConfetti() {
+      const wrap = document.getElementById("confettiWrap");
+      const cols = ["#4285F4", "#34A853", "#FBBC04", "#EA4335", "#9b59b6", "#f59e0b", "#1a1a1a"];
+      for (let i = 0; i < 100; i++) {
+        const el = document.createElement("div");
+        el.className = "cdot";
+        const sz = 6 + Math.random() * 10;
+        el.style.cssText = `left:${Math.random() * 100}vw;top:-20px;width:${sz}px;height:${Math.random() > 0.6 ? sz * 0.4 : sz}px;background:${cols[Math.floor(Math.random() * cols.length)]};border-radius:${Math.random() > 0.5 ? '50%' : '2px'};animation-duration:${1.6 + Math.random() * 2.4}s;animation-delay:${Math.random() * 0.9}s;`;
+        wrap.appendChild(el);
+        el.addEventListener("animationend", () => el.remove());
+      }
+    }
+
+    /* ════════════════════════════════════════════════
+       HELPERS
+    ════════════════════════════════════════════════ */
+    function show(id) { const el = document.getElementById(id); if (el) el.style.display = "block"; }
+    function hide(id) { const el = document.getElementById(id); if (el) el.style.display = "none"; }
+    function setBadge(id, t) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.background = t.light; el.style.borderColor = t.color;
+      el.textContent = `${t.emoji} ${t.name}`;
+    }
+    function showMsg(id, type, text) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = `msg-box ${type}`;
+      el.textContent = text;
+      el.style.display = "block";
+    }
+
+    /* ════════════════════════════════════════════════
+       MAIN
+    ════════════════════════════════════════════════ */
+    function main() {
+      const params = new URLSearchParams(window.location.search);
+      const startParam = params.get("start");
+      const clueParam = params.get("clue");
+
+      if (startParam) {
+        handleStart(parseInt(startParam));
+        return;
+      }
+      if (clueParam) {
+        // Check state exists (must have scanned start QR first)
+        const s = getState();
+        if (!s) { showScreen("screen-invalid"); return; }
+        handleClue(clueParam);
+        return;
+      }
+      // No params — show current state or welcome
+      const s = getState();
+      if (s) routeToTrack(s);
+      else showWelcome();
+    }
+
+    main();
+  </script>
 </body>
+
 </html>
