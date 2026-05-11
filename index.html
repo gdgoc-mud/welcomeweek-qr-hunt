@@ -1572,20 +1572,37 @@
 
     <!-- Wordle UI -->
     <div class="nb-card" id="t4WordleCard" style="max-width:500px;display:none">
-      <div class="nb-label" id="t4WordleLabel">Wordle #1 of 8</div>
-      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:14px" id="t4Instruction"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="nb-label" style="margin:0" id="t4WordleLabel">Wordle #1 of 8</div>
+        <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid)" id="t4AttemptCounter"></div>
+      </div>
+      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:6px" id="t4Instruction"></div>
+      <!-- Special hint warning shown from attempt 1 -->
+      <div id="t4SpecialWarning" style="display:none;padding:8px 12px;background:#fef3c7;border:2px solid #FBBC04;font-size:12px;font-weight:600;color:#92400e;margin-bottom:10px">
+        ⚠️ Guess within <span id="t4AttemptsLeft">5</span> attempts to unlock the exact QR location hint!
+      </div>
       <div class="wordle-grid" id="wordleGrid" style="margin-bottom:10px"></div>
       <div id="t4Msg" class="msg-box" style="display:none;margin-top:8px"></div>
+      <!-- Exact hint revealed inline on solve ≤5 attempts -->
+      <div id="t4SpecialHint" style="display:none;margin-top:12px;padding:14px;background:#052e16;border:2px solid #22c55e;border-radius:4px">
+        <div style="font-family:var(--gm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#22c55e;margin-bottom:6px">🎯 Exact Location Unlocked</div>
+        <div style="font-size:14px;font-weight:600;color:#86efac" id="t4SpecialHintText"></div>
+      </div>
     </div>
+    <!-- Vague hint (180s timer) -->
     <div class="t4-hint-box" id="t4HintBox"></div>
     <div class="wordle-keyboard" id="wordleKeyboard" style="display:none"></div>
 
     <!-- "Go find the QR" state -->
     <div class="t4-found-location" id="t4FoundLocation" style="display:none">
-      <div style="font-family:var(--gm);font-size:10px;letter-spacing:2px;color:#888;margin-bottom:6px">LOCATION
-        UNLOCKED</div>
+      <div style="font-family:var(--gm);font-size:10px;letter-spacing:2px;color:#888;margin-bottom:6px">LOCATION UNLOCKED</div>
       <div class="word" id="t4LocationWord"></div>
-      <p>Go find the QR code there and scan it to continue.</p>
+      <p id="t4LocationSubtext">Go find the QR code there and scan it to continue.</p>
+      <!-- Exact location shown here too if they earned it -->
+      <div id="t4LocationExactHint" style="display:none;margin-top:14px;padding:12px;background:#052e16;border:2px solid #22c55e;border-radius:4px;text-align:left">
+        <div style="font-family:var(--gm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#22c55e;margin-bottom:4px">🎯 Exact Location</div>
+        <div style="font-size:14px;font-weight:600;color:#86efac" id="t4LocationExactText"></div>
+      </div>
       <div style="font-family:var(--gm);font-size:10px;color:#555;margin-top:10px" id="t4LocationProgress"></div>
     </div>
 
@@ -1712,17 +1729,29 @@
     };
 
     // TRACK 4 — Wordle
-    // words[i] = answer for wordle i+1; correct guess → location of QR code i+1
-    const T4_WORDS = ["stairs", "pantry", "lobby", "games", "rest", "xbox", "jenga", "doors"];
-    const T4_HINTS = [
-      "Think vertically. Not the lift.",
-      "Where hunger goes to hide.",
-      "The first face of the building.",
-      "Where competition lives.",
-      "Sit. Breathe. Chill.",
-      "Buttons and controllers.",
-      "Don't let it fall.",
-      "The way in, or the way out.",
+    // words[i]   = answer for wordle i+1 (= location of QR code i+1)
+    // T4_VAGUE   = vague hint shown after 180s of struggling
+    // T4_EXACT   = exact location hint — ONLY unlocked if solved in ≤5 attempts
+    const T4_WORDS = ["softboard", "drawer", "gaming", "extinguish", "fridge", "trash", "stair", "arcade"];
+    const T4_VAGUE = [
+      "Something you'd pin a note on. Look up.",
+      "Something in a kitchen you'd slide open.",
+      "Where the screens and controllers live.",
+      "A red cylinder. Hopefully never needed.",
+      "Cold. Humming. Keeps things fresh.",
+      "It smells a bit. Hopefully not full.",
+      "Going up or down — not the lift.",
+      "Wooden blocks. Don't let it fall.",
+    ];
+    const T4_EXACT = [
+      "On the 2nd floor — check the softboard.",
+      "Fresh cutlery drawer. Yummy 🍴",
+      "The Xbox booth — you know where.",
+      "The fire extinguisher next to Touchdown 118. This is pretty fire ayeee 🔥",
+      "Hungry hungry hippo. Fridge in the pantry 🧃",
+      "Bin outside the library 🗑️",
+      "On one of the doors in the stairwell 🚪",
+      "Check one of the Jenga blocks 🪵",
     ];
     const T4_CLUES = {
       "T4_C1_A2j7": { track: 4, clue: 1 },
@@ -2154,10 +2183,21 @@
 
     /* ════════════════════════════════════════════════
        TRACK 4 — WORDLE (GATED)
+
+       State extras:
+         wordlesSolved  — wordles completed (0-8)
+         qrScanned      — QRs scanned (0-8)
+         t4Guesses      — persisted guesses for current active wordle
+         t4ExactEarned  — array[8] booleans, true if solved that wordle in ≤5 attempts
+
+       Attempt rules:
+         ≤5 attempts  → exact location hint revealed immediately on solve + shown on "find QR" screen
+         6-7 attempts → special hint locked, can still solve
+         >7 attempts  → auto-reset (guesses cleared, special hint permanently lost for this wordle)
+         180s timer   → vague hint regardless of attempts
     ════════════════════════════════════════════════ */
-    // State: { track:4, wordlesSolved:0, qrScanned:0, scanned:{}, t4Guesses:[] }
-    // wordlesSolved === qrScanned → show wordle #(wordlesSolved+1)
-    // wordlesSolved > qrScanned  → show "go find QR" screen
+    const T4_MAX_ATTEMPTS   = 7; // hard reset after this many failed guesses
+    const T4_SPECIAL_CUTOFF = 5; // must solve within this many for exact hint
 
     let t4HintTimer = null;
     let t4WordleActive = { word: "", guesses: [], currentGuess: "", done: false };
@@ -2167,8 +2207,8 @@
       const t = TRACKS[4]; setBadge("t4Badge", t);
       if (t4HintTimer) { clearTimeout(t4HintTimer); t4HintTimer = null; }
 
-      const solved = state.wordlesSolved || 0;
-      const scanned = state.qrScanned || 0;
+      const solved  = state.wordlesSolved || 0;
+      const scanned = state.qrScanned    || 0;
 
       renderT4Dots(solved, scanned);
 
@@ -2177,41 +2217,67 @@
         showComplete(state, "All 8 Wordles solved! 🟩"); return;
       }
 
-      // Solved a wordle, need to go find the QR
+      // Solved a wordle — waiting to scan QR
       if (solved > scanned) {
         hide("t4WordleCard"); hide("wordleKeyboard"); hide("t4HintBox");
         show("t4FoundLocation");
         const word = T4_WORDS[scanned].toUpperCase();
         document.getElementById("t4LocationWord").textContent = word;
         document.getElementById("t4LocationProgress").textContent =
-          `QR ${scanned + 1} of 8 — scan it to unlock the next Wordle`;
+          `QR ${scanned + 1} of 8 — scan it to unlock Wordle #${scanned + 2}`;
+        // Show exact location if earned for this wordle index
+        const earned = (state.t4ExactEarned || [])[scanned];
+        const exactBox = document.getElementById("t4LocationExactHint");
+        if (earned) {
+          document.getElementById("t4LocationExactText").textContent = T4_EXACT[scanned];
+          exactBox.style.display = "block";
+        } else {
+          exactBox.style.display = "none";
+        }
         return;
       }
 
-      // Need to solve next wordle
-      hide("t4FoundLocation"); show("t4WordleCard"); show("wordleKeyboard");
+      // Active wordle
+      hide("t4FoundLocation"); hide("t4SpecialHint");
+      show("t4WordleCard"); show("wordleKeyboard");
 
       const wordleNum = solved + 1;
       const word = T4_WORDS[solved].toUpperCase();
       document.getElementById("t4WordleLabel").textContent = `Wordle #${wordleNum} of 8`;
       document.getElementById("t4Instruction").textContent =
-        `Guess the ${word.length}-letter word. It's the location of QR code #${wordleNum}.`;
+        `Guess the ${word.length}-letter word — it's the location of QR code #${wordleNum}.`;
 
-      // Restore or init
       const savedGuesses = state.t4Guesses || [];
       t4WordleActive = { word, guesses: [...savedGuesses], currentGuess: "", done: false };
 
+      updateT4AttemptUI();
       renderWordleGrid();
       renderWordleKeyboard();
       hide("t4Msg");
 
-      // Hint timer — 120s
+      // 180s vague hint timer
       const hintBox = document.getElementById("t4HintBox");
       hintBox.style.display = "none";
       t4HintTimer = setTimeout(() => {
-        hintBox.innerHTML = `💡 <strong>Hint:</strong> ${T4_HINTS[solved]}`;
+        hintBox.innerHTML = `💡 <strong>Vague hint:</strong> ${T4_VAGUE[solved]}`;
         hintBox.style.display = "block";
-      }, 120000);
+      }, 180000);
+    }
+
+    // Updates attempt counter label + special-hint warning chip
+    function updateT4AttemptUI() {
+      const used = t4WordleActive.guesses.length;
+      const remaining = T4_SPECIAL_CUTOFF - used;
+      document.getElementById("t4AttemptCounter").textContent = `${used} / ${T4_MAX_ATTEMPTS} attempts`;
+      const warning = document.getElementById("t4SpecialWarning");
+      const attemptsLeftEl = document.getElementById("t4AttemptsLeft");
+      if (remaining > 0) {
+        warning.style.display = "block";
+        attemptsLeftEl.textContent = remaining;
+      } else {
+        // Past 5 — special hint gone, hide warning
+        warning.style.display = "none";
+      }
     }
 
     function renderT4Dots(solved, scanned) {
@@ -2219,10 +2285,10 @@
       dots.innerHTML = "";
       for (let i = 0; i < 8; i++) {
         const d = document.createElement("div");
-        if (i < scanned) d.className = "t4-dot done";
-        else if (i < solved) d.className = "t4-dot waiting";
+        if (i < scanned)       d.className = "t4-dot done";
+        else if (i < solved)   d.className = "t4-dot waiting";
         else if (i === solved) d.className = "t4-dot current";
-        else d.className = "t4-dot pending";
+        else                   d.className = "t4-dot pending";
         dots.appendChild(d);
       }
     }
@@ -2232,13 +2298,12 @@
       grid.innerHTML = "";
       const { word, guesses, currentGuess } = t4WordleActive;
       const len = word.length;
-      for (let r = 0; r < 6; r++) {
+      for (let r = 0; r < T4_MAX_ATTEMPTS; r++) {
         const row = document.createElement("div");
         row.className = "wordle-row";
         for (let c = 0; c < len; c++) {
           const cell = document.createElement("div");
           cell.className = "wordle-cell";
-          cell.id = `wc-${r}-${c}`;
           if (r < guesses.length) {
             const res = scoreGuess(guesses[r], word);
             cell.textContent = guesses[r][c];
@@ -2268,7 +2333,11 @@
     function renderWordleKeyboard() {
       const kb = document.getElementById("wordleKeyboard");
       kb.innerHTML = "";
-      const rows = [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "⌫"]];
+      const rows = [
+        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+        ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+        ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "⌫"]
+      ];
       const keyStates = {};
       t4WordleActive.guesses.forEach(g => {
         const res = scoreGuess(g, t4WordleActive.word);
@@ -2299,68 +2368,101 @@
 
       if (key === "⌫" || key === "BACKSPACE") {
         t4WordleActive.currentGuess = t4WordleActive.currentGuess.slice(0, -1);
-      } else if (key === "ENTER") {
+        renderWordleGrid(); return;
+      }
+
+      if (key === "ENTER") {
         if (t4WordleActive.currentGuess.length !== word.length) {
           showMsg("t4Msg", "err", `Word must be ${word.length} letters!`); renderWordleGrid(); return;
         }
         const guess = t4WordleActive.currentGuess.toUpperCase();
         t4WordleActive.guesses.push(guess);
         t4WordleActive.currentGuess = "";
-        // Persist guesses
-        const s = getState(); s.t4Guesses = t4WordleActive.guesses; saveState(s);
+
+        const s = getState();
+        s.t4Guesses = t4WordleActive.guesses;
+        saveState(s);
+
+        const attemptNum = t4WordleActive.guesses.length;
+        const wordleIdx  = s.wordlesSolved || 0;
 
         if (guess === word) {
-          // SOLVED
+          // ── SOLVED ──
           t4WordleActive.done = true;
-          renderWordleGrid(); renderWordleKeyboard();
-          showMsg("t4Msg", "ok", `✅ Correct! Go find QR #${(s.wordlesSolved || 0) + 1} at that location!`);
           if (t4HintTimer) { clearTimeout(t4HintTimer); t4HintTimer = null; }
           document.getElementById("t4HintBox").style.display = "none";
-          s.wordlesSolved = (s.wordlesSolved || 0) + 1;
-          s.t4Guesses = []; // reset for next wordle
+
+          const earnedExact = attemptNum <= T4_SPECIAL_CUTOFF;
+          if (!s.t4ExactEarned) s.t4ExactEarned = [];
+          s.t4ExactEarned[wordleIdx] = earnedExact;
+          s.wordlesSolved = wordleIdx + 1;
+          s.t4Guesses = [];
           saveState(s);
-          setTimeout(() => renderT4(s), 1800);
-        } else if (t4WordleActive.guesses.length >= 6) {
-          // FAILED — reset silently after 2.5s
+
+          renderWordleGrid(); renderWordleKeyboard(); updateT4AttemptUI();
+
+          if (earnedExact) {
+            // Show exact hint inline immediately
+            document.getElementById("t4SpecialHintText").textContent = T4_EXACT[wordleIdx];
+            show("t4SpecialHint");
+            hide("t4SpecialWarning");
+            showMsg("t4Msg", "ok", `✅ Solved in ${attemptNum}! 🎯 Exact location unlocked — see below!`);
+          } else {
+            showMsg("t4Msg", "ok", `✅ Correct! You know the location — go find QR #${wordleIdx + 1}!`);
+          }
+          setTimeout(() => renderT4(s), earnedExact ? 3000 : 1800);
+
+        } else if (attemptNum >= T4_MAX_ATTEMPTS) {
+          // ── FAILED 7 attempts — hard reset, special hint permanently lost ──
           t4WordleActive.done = true;
-          renderWordleGrid(); renderWordleKeyboard();
-          showMsg("t4Msg", "err", `The word was ${word}. Try again!`);
+          renderWordleGrid(); renderWordleKeyboard(); updateT4AttemptUI();
+          showMsg("t4Msg", "err", `❌ Out of attempts. Resetting — special hint is gone for this one.`);
+          if (!s.t4ExactEarned) s.t4ExactEarned = [];
+          s.t4ExactEarned[wordleIdx] = false;
+          s.t4Guesses = [];
+          saveState(s);
           setTimeout(() => {
             t4WordleActive = { word, guesses: [], currentGuess: "", done: false };
             const s2 = getState(); s2.t4Guesses = []; saveState(s2);
             renderWordleGrid(); renderWordleKeyboard(); hide("t4Msg");
-          }, 2500);
+            updateT4AttemptUI();
+          }, 2800);
+
         } else {
-          renderWordleGrid(); renderWordleKeyboard();
+          renderWordleGrid(); renderWordleKeyboard(); updateT4AttemptUI();
         }
-      } else if (/^[A-Z]$/.test(key)) {
+        return;
+      }
+
+      if (/^[A-Z]$/.test(key)) {
         if (t4WordleActive.currentGuess.length < word.length)
           t4WordleActive.currentGuess += key;
         renderWordleGrid();
       }
     }
 
-    // T4 clue scan: only accepted if they've solved the corresponding wordle
+    // T4 clue scan — only valid after solving the corresponding wordle
     function handleT4ClueScan(token, clue, state) {
-      const solved = state.wordlesSolved || 0;
-      const scanned = state.qrScanned || 0;
+      const solved  = state.wordlesSolved || 0;
+      const scanned = state.qrScanned    || 0;
 
       if (solved <= scanned) {
-        // Haven't solved current wordle yet
         window.history.replaceState({}, "", window.location.pathname);
         renderT4(state);
-        showMsg("t4Msg", "err", "Solve the current Wordle first!");
-        show("t4WordleCard"); return;
+        show("t4WordleCard");
+        showMsg("t4Msg", "err", "Solve the current Wordle first, then come scan this!");
+        return;
       }
       if (clue.clue !== scanned + 1) {
         window.history.replaceState({}, "", window.location.pathname);
         renderT4(state);
+        show("t4WordleCard");
         showMsg("t4Msg", "err", `That's QR #${clue.clue}, but you need QR #${scanned + 1} right now.`);
-        show("t4WordleCard"); return;
+        return;
       }
 
       state.scanned[token] = { clue: clue.clue };
-      state.qrScanned = (state.qrScanned || 0) + 1;
+      state.qrScanned = scanned + 1;
       state.t4Guesses = [];
       saveState(state);
       window.history.replaceState({}, "", window.location.pathname);
