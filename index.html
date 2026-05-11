@@ -755,13 +755,14 @@
     }
 
     /* ═══════════════════════════════════
-   TRACK 3 — SPACE / AMONG US
+   TRACK 3 — SPACE / AMONG US (FULL OVERHAUL)
 ═══════════════════════════════════ */
     #screen-t3 {
       padding: 0;
-      background: #0a0a1a;
+      background: #050510;
       min-height: 100vh;
       position: relative;
+      overflow: hidden;
     }
 
     .stars-bg {
@@ -779,229 +780,421 @@
       animation: twinkle linear infinite;
     }
 
+    .planet {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
     @keyframes twinkle {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 1; }
+    }
 
-      0%,
-      100% {
-        opacity: 0.2;
-      }
-
-      50% {
-        opacity: 1;
-      }
+    @keyframes planetDrift {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-12px) rotate(5deg); }
     }
 
     .t3-content {
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
       margin: 0 auto;
-      padding: 28px 20px 60px;
+      padding: 24px 16px 60px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       align-items: center;
     }
 
+    /* Header */
+    .t3-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 14px;
+      background: #0d0d2b;
+      border: 1px solid #1e2a5e;
+      border-radius: 6px;
+    }
+
+    .t3-logo-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .t3-ship {
-      font-size: 52px;
-      display: block;
-      text-align: center;
+      font-size: 28px;
       animation: float 3s ease-in-out infinite;
     }
 
     @keyframes float {
-
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-8px);
-      }
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
     }
 
     .t3-title {
       font-weight: 700;
-      font-size: 24px;
+      font-size: 16px;
       color: #7dd3fc;
       letter-spacing: 1px;
-      text-shadow: 0 0 20px #7dd3fc66;
-      text-align: center;
+      text-shadow: 0 0 12px #7dd3fc88;
     }
 
     .t3-subtitle {
       font-family: var(--gm);
-      font-size: 11px;
-      color: #475569;
+      font-size: 9px;
+      color: #334155;
       letter-spacing: 2px;
       text-transform: uppercase;
-      margin-top: 4px;
-      text-align: center;
+      margin-top: 2px;
     }
 
-    .t3-card {
+    .t3-progress-badge {
+      font-family: var(--gm);
+      font-size: 11px;
+      color: #22c55e;
+      background: #052e1688;
+      border: 1px solid #22c55e44;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* Map */
+    .t3-map-wrap {
       width: 100%;
-      background: #0f172a;
-      border: 2px solid #1e293b;
-      border-radius: 4px;
-      padding: 18px;
-      box-shadow: 0 0 30px #7dd3fc0a;
+      background: #0a0a2a;
+      border: 1px solid #1e2a5e;
+      border-radius: 6px;
+      padding: 10px;
+      position: relative;
     }
 
-    .t3-card-label {
+    .t3-map-label {
       font-family: var(--gm);
       font-size: 9px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #475569;
-      margin-bottom: 10px;
+      color: #334155;
+      margin-bottom: 8px;
     }
 
-    .t3-task-img {
+    .t3-map-container {
+      position: relative;
       width: 100%;
-      height: 140px;
-      background: #1e293b;
-      border: 2px solid #334155;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 10px;
-      overflow: hidden;
     }
 
-    .t3-task-img img {
+    .t3-map-container img.map-base {
+      width: 100%;
+      display: block;
+      border-radius: 4px;
+      opacity: 0.9;
+    }
+
+    .t3-map-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .t3-map-marker {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      width: 28px;
+      height: 28px;
+    }
+
+    .t3-map-marker img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
     }
 
-    .t3-task-img .placeholder-text {
+    .t3-player-marker {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      width: 22px;
+      height: 22px;
+      animation: playerPulse 1.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 6px #ea4335);
+    }
+
+    .t3-player-marker img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    @keyframes playerPulse {
+      0%, 100% { filter: drop-shadow(0 0 4px #ea4335); }
+      50% { filter: drop-shadow(0 0 10px #ea4335); }
+    }
+
+    /* Task card */
+    .t3-task-card {
+      width: 100%;
+      background: #0a0f2e;
+      border: 1px solid #1e3a5f;
+      border-radius: 6px;
+      padding: 16px;
+      box-shadow: 0 0 20px #7dd3fc08;
+    }
+
+    .t3-task-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .t3-task-status-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .t3-task-status-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .t3-task-card-label {
       font-family: var(--gm);
-      font-size: 11px;
-      color: #475569;
-      text-align: center;
-      padding: 8px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #334155;
     }
 
     .t3-task-name {
       font-weight: 700;
-      font-size: 17px;
+      font-size: 15px;
       color: #e2e8f0;
-      margin-bottom: 6px;
+      line-height: 1.2;
     }
 
     .t3-task-desc {
-      font-size: 13px;
+      font-size: 12px;
       color: #94a3b8;
-      line-height: 1.55;
+      line-height: 1.6;
+      font-style: italic;
+      border-left: 2px solid #1e3a5f;
+      padding-left: 10px;
+      margin-top: 8px;
     }
 
-    .t3-progress-text {
+    /* Task list */
+    .t3-manifest {
+      width: 100%;
+      background: #0a0f2e;
+      border: 1px solid #1e2a5e;
+      border-radius: 6px;
+      padding: 14px;
+    }
+
+    .t3-manifest-title {
       font-family: var(--gm);
-      font-size: 11px;
-      color: #7dd3fc;
-      text-align: center;
-      letter-spacing: 1px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #334155;
+      margin-bottom: 10px;
     }
 
     .t3-task-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
+      gap: 8px;
+      padding: 6px 8px;
       border-radius: 4px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       transition: all 0.4s;
     }
 
-    .t3-task-item.done {
-      background: #052e16aa;
-    }
+    .t3-task-item.done { background: #052e1688; }
+    .t3-task-item.pending { background: #0d1535; }
 
-    .t3-task-item.pending {
-      background: #1e293b55;
-    }
-
-    .t3-task-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
+    .t3-task-item-icon {
+      width: 18px;
+      height: 18px;
       flex-shrink: 0;
-      border: 2px solid;
     }
 
-    .t3-task-item.done .t3-task-dot {
-      background: #22c55e;
-      border-color: #22c55e;
-      box-shadow: 0 0 8px #22c55e66;
-    }
-
-    .t3-task-item.pending .t3-task-dot {
-      background: transparent;
-      border-color: #334155;
+    .t3-task-item-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .t3-task-item-name {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
     }
 
-    .t3-task-item.done .t3-task-item-name {
-      color: #86efac;
+    .t3-task-item.done .t3-task-item-name { color: #86efac; }
+    .t3-task-item.pending .t3-task-item-name { color: #334155; }
+
+    /* Intro */
+    .t3-intro-box {
+      width: 100%;
+      background: #0a0f2e;
+      border: 1px solid #7dd3fc33;
+      border-radius: 6px;
+      padding: 20px;
+      text-align: center;
     }
 
-    .t3-task-item.pending .t3-task-item-name {
-      color: #475569;
+    .t3-intro-box p {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.65;
+      margin-top: 8px;
     }
 
+    /* Impostor timer */
+    .t3-impostor-overlay {
+      position: fixed;
+      inset: 0;
+      background: #1a000066;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+
+    .t3-impostor-box {
+      background: #1a0000;
+      border: 2px solid #EA4335;
+      border-radius: 8px;
+      padding: 28px 24px;
+      text-align: center;
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 0 40px #ea433566;
+      animation: redFlash 1s ease-in-out infinite;
+    }
+
+    @keyframes redFlash {
+      0%, 100% { box-shadow: 0 0 30px #ea433544; }
+      50% { box-shadow: 0 0 60px #ea4335aa; }
+    }
+
+    .t3-impostor-title {
+      font-weight: 700;
+      font-size: 22px;
+      color: #EA4335;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      text-shadow: 0 0 20px #EA4335;
+    }
+
+    .t3-impostor-subtitle {
+      font-family: var(--gm);
+      font-size: 10px;
+      color: #7f1d1d;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+    }
+
+    .t3-guardian-angel {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 14px;
+      object-fit: contain;
+      animation: float 2s ease-in-out infinite;
+    }
+
+    .t3-guardian-fallback {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 14px;
+      font-size: 60px;
+      line-height: 80px;
+      text-align: center;
+    }
+
+    .t3-timer-ring {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 14px;
+    }
+
+    .t3-timer-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .t3-timer-ring .ring-bg {
+      fill: none;
+      stroke: #7f1d1d;
+      stroke-width: 6;
+    }
+
+    .t3-timer-ring .ring-fill {
+      fill: none;
+      stroke: #EA4335;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    .t3-timer-num {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 700;
+      font-size: 22px;
+      color: #EA4335;
+      font-family: var(--gm);
+    }
+
+    .t3-impostor-msg {
+      font-size: 13px;
+      color: #fca5a5;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    /* Complete */
     .t3-complete-banner {
       background: #052e16;
       border: 2px solid #22c55e;
-      border-radius: 4px;
+      border-radius: 6px;
       padding: 20px;
       text-align: center;
       box-shadow: 0 0 30px #22c55e33;
       width: 100%;
     }
 
-    .t3-intro-box {
-      background: #0f172a;
-      border: 2px solid #7dd3fc44;
-      border-radius: 4px;
-      padding: 22px;
-      text-align: center;
-      width: 100%;
-    }
-
-    .t3-intro-box p {
-      font-size: 14px;
-      color: #94a3b8;
-      line-height: 1.65;
-      margin-top: 10px;
-    }
-
     .t3-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 13px;
+      padding: 12px;
       font-family: var(--gs);
       font-weight: 700;
-      font-size: 14px;
-      border: 2px solid #1e3a5f;
-      background: #0f172a;
-      color: #7dd3fc;
+      font-size: 13px;
+      border: 1px solid #1e3a5f;
+      background: #0a0f2e;
+      color: #475569;
       cursor: pointer;
       width: 100%;
-      margin-top: 0;
+      border-radius: 4px;
     }
 
-    .t3-btn:hover {
-      background: #1e293b;
-    }
+    .t3-btn:hover { color: #7dd3fc; border-color: #7dd3fc44; }
 
     /* ═══════════════════════════════════
    TRACK 4 — WORDLE
@@ -1389,6 +1582,17 @@
   </div>
 
   <!-- ═══════════════════════════════════
+     NO START QR SCANNED YET
+═══════════════════════════════════ -->
+  <div id="screen-no-start">
+    <div class="nb-card" style="max-width:500px;margin-top:40px;text-align:center">
+      <div class="big-icon">📍</div>
+      <div class="big-title" style="font-size:28px">Head to the Booth First!</div>
+      <div class="big-body" style="margin-top:8px">You need to pick a pathway before scanning field QR codes. Head over to the <strong>GDGoC stall in Touchdown 118</strong> to begin the quest!</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
      INVALID
 ═══════════════════════════════════ -->
   <div id="screen-invalid">
@@ -1492,8 +1696,7 @@
 
     <div id="t2InputCard" class="nb-card" style="max-width:500px;display:none">
       <div class="nb-label">Make Words</div>
-      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:12px">Use only your 8 letters. Find as many valid
-        words as possible (min 3 letters).</div>
+      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:12px">Type words you can make from the letters <strong>G D G O C M U D</strong>. Only valid words count — find at least 6 to win!</div>
       <div class="t2-score-bar" style="margin-bottom:8px">
         <div class="t2-score-fill" id="t2ScoreFill" style="width:0%"></div>
       </div>
@@ -1517,43 +1720,83 @@
 ═══════════════════════════════════ -->
   <div id="screen-t3">
     <div class="stars-bg" id="starsBg"></div>
-    <div class="t3-content">
-      <span class="t3-ship">🚀</span>
-      <div class="t3-title" id="t3Title">ENDO STATION</div>
-      <div class="t3-subtitle" id="t3Subtitle">Emergency Task Protocol · Active</div>
 
-      <!-- Intro (0 scanned) -->
+    <!-- Impostor warning overlay -->
+    <div class="t3-impostor-overlay" id="t3ImpostorOverlay">
+      <div class="t3-impostor-box">
+        <div class="t3-impostor-title">⚠ IMPOSTOR DETECTED</div>
+        <div class="t3-impostor-subtitle">WRONG QR CODE SCANNED</div>
+        <img src="guardian_angel.png" class="t3-guardian-angel" alt="Guardian Angel"
+             onerror="this.style.display='none';document.getElementById('t3GuardianFallback').style.display='block'">
+        <div class="t3-guardian-fallback" id="t3GuardianFallback" style="display:none">👼</div>
+        <div class="t3-timer-ring">
+          <svg width="90" height="90" viewBox="0 0 90 90">
+            <circle class="ring-bg" cx="45" cy="45" r="38"/>
+            <circle class="ring-fill" id="t3TimerRing" cx="45" cy="45" r="38"
+              stroke-dasharray="238.76" stroke-dashoffset="0"/>
+          </svg>
+          <div class="t3-timer-num" id="t3TimerNum">2:00</div>
+        </div>
+        <div class="t3-impostor-msg">Find the correct QR code within 2 minutes or your mission resets!</div>
+      </div>
+    </div>
+
+    <div class="t3-content">
+      <!-- Header row -->
+      <div class="t3-header-row">
+        <div class="t3-logo-area">
+          <span class="t3-ship">🚀</span>
+          <div>
+            <div class="t3-title" id="t3Title">ENDO STATION</div>
+            <div class="t3-subtitle" id="t3Subtitle">Emergency Task Protocol · Active</div>
+          </div>
+        </div>
+        <div class="t3-progress-badge" id="t3ProgressBadge">0 / 8</div>
+      </div>
+
+      <!-- Map -->
+      <div class="t3-map-wrap" id="t3MapWrap">
+        <div class="t3-map-label">📡 Station Map — Endo Campus</div>
+        <div class="t3-map-container" id="t3MapContainer">
+          <img src="campus_map.png" class="map-base" alt="Campus Map"
+               onerror="this.style.opacity='0.3'">
+          <div class="t3-map-overlay" id="t3MapOverlay"></div>
+        </div>
+      </div>
+
+      <!-- Intro box (0 scanned) -->
       <div class="t3-intro-box" id="t3IntroBox" style="display:none">
         <div style="font-size:40px;margin-bottom:10px">👨‍🚀</div>
         <div style="font-weight:700;font-size:18px;color:#7dd3fc">Welcome aboard, Crewmate.</div>
-        <p>The Endo Station has been compromised. Systems are failing across the campus. Your mission: locate and
-          complete all 8 emergency tasks hidden around the station to restore full operation.</p>
-        <p style="margin-top:10px;color:#64748b;font-family:var(--gm);font-size:11px">SCAN THE FIELD QR CODES TO
-          COMPLETE TASKS</p>
+        <p>The Endo Station has been compromised. Systems are failing across the campus. Your mission: locate and complete all 8 emergency tasks hidden around the station to restore full operation. Tasks can be done in any order.</p>
+        <p style="margin-top:10px;color:#334155;font-family:var(--gm);font-size:10px;letter-spacing:1px">BEWARE: NON-PATHWAY QR CODES ARE IMPOSTOR CODES</p>
       </div>
 
-      <!-- Latest task card -->
-      <div class="t3-card" id="t3TaskCard" style="display:none">
-        <div class="t3-card-label">Task Completed</div>
-        <div class="t3-task-name" id="t3TaskName"></div>
-        <div class="t3-task-img" id="t3TaskImg"></div>
+      <!-- Current task card (shown after each scan) -->
+      <div class="t3-task-card" id="t3TaskCard" style="display:none">
+        <div class="t3-task-card-header">
+          <div class="t3-task-status-icon">
+            <img src="task_complete.png" alt="Complete" onerror="this.parentElement.innerHTML='✅'">
+          </div>
+          <div>
+            <div class="t3-task-card-label">Task Complete</div>
+            <div class="t3-task-name" id="t3TaskName"></div>
+          </div>
+        </div>
         <div class="t3-task-desc" id="t3TaskDesc"></div>
       </div>
 
-      <div class="t3-progress-text" id="t3ProgressText" style="display:none"></div>
-
       <!-- Task manifest -->
-      <div class="t3-card" id="t3Manifest" style="display:none">
-        <div class="t3-card-label">📋 Task Manifest — Endo Station</div>
+      <div class="t3-manifest" id="t3Manifest" style="display:none">
+        <div class="t3-manifest-title">📋 Task Manifest — Endo Station</div>
         <div id="t3TaskList"></div>
       </div>
 
-      <!-- Complete -->
+      <!-- Complete banner -->
       <div class="t3-complete-banner" id="t3CompleteBanner" style="display:none">
-        <div style="font-size:40px;margin-bottom:8px">✅</div>
+        <div style="font-size:36px;margin-bottom:8px">✅</div>
         <div class="t3-title">All Systems Restored!</div>
-        <div style="font-size:13px;color:#86efac;margin-top:8px;font-family:var(--gs)">Endo Station is operational. Head
-          to the GDGoC booth and show this screen!</div>
+        <div style="font-size:13px;color:#86efac;margin-top:8px">Endo Station is fully operational. Head to the GDGoC booth and show this screen!</div>
       </div>
 
       <button class="t3-btn" onclick="resetProgress()">↩ Switch pathway</button>
@@ -1572,37 +1815,20 @@
 
     <!-- Wordle UI -->
     <div class="nb-card" id="t4WordleCard" style="max-width:500px;display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div class="nb-label" style="margin:0" id="t4WordleLabel">Wordle #1 of 8</div>
-        <div style="font-family:var(--gm);font-size:10px;color:var(--ink-mid)" id="t4AttemptCounter"></div>
-      </div>
-      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:6px" id="t4Instruction"></div>
-      <!-- Special hint warning shown from attempt 1 -->
-      <div id="t4SpecialWarning" style="display:none;padding:8px 12px;background:#fef3c7;border:2px solid #FBBC04;font-size:12px;font-weight:600;color:#92400e;margin-bottom:10px">
-        ⚠️ Guess within <span id="t4AttemptsLeft">5</span> attempts to unlock the exact QR location hint!
-      </div>
+      <div class="nb-label" id="t4WordleLabel">Wordle #1 of 8</div>
+      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:14px" id="t4Instruction"></div>
       <div class="wordle-grid" id="wordleGrid" style="margin-bottom:10px"></div>
       <div id="t4Msg" class="msg-box" style="display:none;margin-top:8px"></div>
-      <!-- Exact hint revealed inline on solve ≤5 attempts -->
-      <div id="t4SpecialHint" style="display:none;margin-top:12px;padding:14px;background:#052e16;border:2px solid #22c55e;border-radius:4px">
-        <div style="font-family:var(--gm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#22c55e;margin-bottom:6px">🎯 Exact Location Unlocked</div>
-        <div style="font-size:14px;font-weight:600;color:#86efac" id="t4SpecialHintText"></div>
-      </div>
     </div>
-    <!-- Vague hint (180s timer) -->
     <div class="t4-hint-box" id="t4HintBox"></div>
     <div class="wordle-keyboard" id="wordleKeyboard" style="display:none"></div>
 
     <!-- "Go find the QR" state -->
     <div class="t4-found-location" id="t4FoundLocation" style="display:none">
-      <div style="font-family:var(--gm);font-size:10px;letter-spacing:2px;color:#888;margin-bottom:6px">LOCATION UNLOCKED</div>
+      <div style="font-family:var(--gm);font-size:10px;letter-spacing:2px;color:#888;margin-bottom:6px">LOCATION
+        UNLOCKED</div>
       <div class="word" id="t4LocationWord"></div>
-      <p id="t4LocationSubtext">Go find the QR code there and scan it to continue.</p>
-      <!-- Exact location shown here too if they earned it -->
-      <div id="t4LocationExactHint" style="display:none;margin-top:14px;padding:12px;background:#052e16;border:2px solid #22c55e;border-radius:4px;text-align:left">
-        <div style="font-family:var(--gm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#22c55e;margin-bottom:4px">🎯 Exact Location</div>
-        <div style="font-size:14px;font-weight:600;color:#86efac" id="t4LocationExactText"></div>
-      </div>
+      <p>Go find the QR code there and scan it to continue.</p>
       <div style="font-family:var(--gm);font-size:10px;color:#555;margin-top:10px" id="t4LocationProgress"></div>
     </div>
 
@@ -1694,7 +1920,21 @@
 
     // TRACK 2 — Lexicon (letters spell GDGOCMUD)
     const T2_LETTERS = ["G", "D", "G", "O", "C", "M", "U", "D"];
-    const T2_MIN_WORDS = 5;
+    const T2_MIN_WORDS = 6;
+    // Only these words are valid — all formable from G,D,G,O,C,M,U,D
+    const T2_VALID_WORDS = {
+      "COG":  "A tooth on a wheel or gear.",
+      "DOC":  "Short for doctor or document.",
+      "DOG":  "Our favorite four-legged friends.",
+      "DUD":  "Something that fails to work.",
+      "DUG":  "Past tense of dig.",
+      "GOD":  "A deity or supreme being.",
+      "GUM":  "Chewing gum or the tissue around teeth.",
+      "MOD":  "Short for modern or modification.",
+      "MUD":  "Wet, sticky earth.",
+      "MUG":  "A large cup or a slang term for a face.",
+      "DOUG": "A common English name.",
+    };
     const T2_CLUES = {
       "T2_C1_J6t5": { track: 2, clue: 1, letter: "G" },
       "T2_C2_K2u9": { track: 2, clue: 2, letter: "D" },
@@ -1706,16 +1946,50 @@
       "T2_C8_R9a8": { track: 2, clue: 8, letter: "D" },
     };
 
-    // TRACK 3 — Crewmate
+    // TRACK 3 — Crewmate / Among Us
+    // mapX/mapY are percentage positions on the campus_map.png image
+    // These match the map you provided — tweak the % values after testing if needed
     const T3_TASKS = [
-      { name: "The Stairs", img: "t3_img1.jpg", desc: "Suspicious activity detected near the stairwell. Task logged — area secured." },
-      { name: "The Pantry", img: "t3_img2.jpg", desc: "Supply check complete. All snacks accounted for. Pantry cleared." },
-      { name: "The Lobby", img: "t3_img3.jpg", desc: "Entry point scanned. No impostors spotted. Lobby secure." },
-      { name: "The Games Area", img: "t3_img4.jpg", desc: "Recreational zone checked. No one hiding behind the foosball table. Clear." },
-      { name: "The Rest Zone", img: "t3_img5.jpg", desc: "Crewmates resting safely. Vital signs normal. Zone secured." },
-      { name: "Xbox Station", img: "t3_img6.jpg", desc: "Controllers inventoried. All consoles operational. Station clear." },
-      { name: "Jenga Tower", img: "t3_img7.jpg", desc: "Structural integrity confirmed. Tower standing — for now." },
-      { name: "The Doors", img: "t3_img8.jpg", desc: "All entry and exit points sealed. The impostor cannot escape." },
+      {
+        name: "Faulty Reactor-core Garbage Disposal",
+        desc: "Kid let me tell you something… never buy a reactor-core from a SoCal AI startup company… I learned that mistake the hard way. Take this faulty reactor to the ship's garbage disposal unit and throw it away. The disposal unit should be located in the bottom of the ship.",
+        mapX: 38, mapY: 82,  // First floor stairs door — bottom of map
+      },
+      {
+        name: "Make Ship Sustenance Burger-goo",
+        desc: "In order to adequately pilot the navigation of our ship, our navigation lead needs to… refuel… As per his requests, a scrumptious burger is to be delivered. Located in the pantry fridge are the ingredients for The Perfect Burger-goo™, please prepare the burger and notify our navigation lead using the QR code.",
+        mapX: 50, mapY: 14,  // Cafeteria (Pantry) — top right area
+      },
+      {
+        name: "Find the Impostor",
+        desc: "WARNING: IMPOSTOR FOUND IN ADMIN. Watch your back kid, an impostor was found in the Admin room 10 minutes ago. Security cameras found them in the middle of two innocent astronauts. Locate the impostor to save your fellow comrades!",
+        mapX: 43, mapY: 34,  // Admin (Lobby) — center-left
+      },
+      {
+        name: "Fix Wiring in Electrical",
+        desc: "Our communication systems have been going haywire recently and we need your help. Head to Electrical and fix the short circuit by rewiring the circuit. The notorious ghost gang seems to be the culprit.",
+        mapX: 18, mapY: 75,  // Electrical (Games Room) — bottom left
+      },
+      {
+        name: "Water the Plants",
+        desc: "There seems to be a leak in the automatic water dispenser, patch the water pot leak and water the plants.",
+        mapX: 32, mapY: 24,  // Weapons (Rest Zone) — top left area
+      },
+      {
+        name: "Locate our Missing Robot Helper",
+        desc: "Our robot seems to be malfunctioning or simply slacking off... Put it in rice or smack the back of the metal to wake it up. Do what needs to be done — get it to work, the trash needs to be taken out.",
+        mapX: 72, mapY: 74,  // Cockpit (Touchdown 118) — bottom right
+      },
+      {
+        name: "Destroy Meteors",
+        desc: "Enemy towers are spotted harbouring lasers and spy tech. Look over and under each of their spyware tech and find their main power outlet and cut their source clean. We're counting on you, comrade.",
+        mapX: 55, mapY: 34,  // Navigation (Xbox Room) — center
+      },
+      {
+        name: "Catch the (Alien) Predator",
+        desc: "The spaceship flashes red. Message blaring through the system speakers: \"There's been a breach in the containment, foreign entity detected.\" Catch the predator before it causes havoc and disrupts system functioning.",
+        mapX: 44, mapY: 62,  // Corridor near restrooms — center bottom area
+      },
     ];
     const T3_CLUES = {
       "T3_C1_S4b3": { track: 3, clue: 1 },
@@ -1729,29 +2003,17 @@
     };
 
     // TRACK 4 — Wordle
-    // words[i]   = answer for wordle i+1 (= location of QR code i+1)
-    // T4_VAGUE   = vague hint shown after 180s of struggling
-    // T4_EXACT   = exact location hint — ONLY unlocked if solved in ≤5 attempts
-    const T4_WORDS = ["softboard", "drawer", "gaming", "extinguish", "fridge", "trash", "stair", "arcade"];
-    const T4_VAGUE = [
-      "Something you'd pin a note on. Look up.",
-      "Something in a kitchen you'd slide open.",
-      "Where the screens and controllers live.",
-      "A red cylinder. Hopefully never needed.",
-      "Cold. Humming. Keeps things fresh.",
-      "It smells a bit. Hopefully not full.",
-      "Going up or down — not the lift.",
-      "Wooden blocks. Don't let it fall.",
-    ];
-    const T4_EXACT = [
-      "On the 2nd floor — check the softboard.",
-      "Fresh cutlery drawer. Yummy 🍴",
-      "The Xbox booth — you know where.",
-      "The fire extinguisher next to Touchdown 118. This is pretty fire ayeee 🔥",
-      "Hungry hungry hippo. Fridge in the pantry 🧃",
-      "Bin outside the library 🗑️",
-      "On one of the doors in the stairwell 🚪",
-      "Check one of the Jenga blocks 🪵",
+    // words[i] = answer for wordle i+1; correct guess → location of QR code i+1
+    const T4_WORDS = ["stairs", "pantry", "lobby", "games", "rest", "xbox", "jenga", "doors"];
+    const T4_HINTS = [
+      "Think vertically. Not the lift.",
+      "Where hunger goes to hide.",
+      "The first face of the building.",
+      "Where competition lives.",
+      "Sit. Breathe. Chill.",
+      "Buttons and controllers.",
+      "Don't let it fall.",
+      "The way in, or the way out.",
     ];
     const T4_CLUES = {
       "T4_C1_A2j7": { track: 4, clue: 1 },
@@ -1783,7 +2045,7 @@
     function t5ImgSrc(imgSet, pieceNum) { return `puzzle_img${imgSet}_p${pieceNum}.jpg`; }
 
     // TRACK 6 — Rickroll (only a start QR, no clue QRs)
-    const T6_START_URL = "https://www.youtube.com/watch?v=QDia3e12czc";
+    const T6_START_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
     // Master clue lookup
     const ALL_CLUES = { ...T1_CLUES, ...T2_CLUES, ...T3_CLUES, ...T4_CLUES, ...T5_CLUES };
@@ -1889,14 +2151,21 @@
       let state = getState();
       if (!state) {
         // Scanned a field QR without scanning start QR first
-        showScreen("screen-invalid"); return;
+        showScreen("screen-no-start"); return;
       }
 
       if (state.track !== clue.track) {
+        // Special case: T3 player scanned a non-T3 QR — trigger impostor timer
+        if (state.track === 3) {
+          window.history.replaceState({}, "", window.location.pathname);
+          renderT3(state, false);
+          triggerT3Impostor();
+          return;
+        }
         showScreen("screen-wrong-track");
-        const mt = TRACKS[state.track], ct = TRACKS[clue.track];
+        const mt = TRACKS[state.track];
         document.getElementById("wrongBody").innerHTML =
-          `This QR is from <strong>${ct.emoji} ${ct.name}</strong>. You're on <strong>${mt.emoji} ${mt.name}</strong>.`;
+          `This isn't your QR code — keep searching, crewmate! You're on <strong>${mt.emoji} ${mt.name}</strong>.`;
         return;
       }
 
@@ -1916,6 +2185,9 @@
         renderT2(state, false);
       }
       else if (clue.track === 3) {
+        // Dismiss impostor timer if active
+        clearT3ImpostorTimer();
+        document.getElementById("t3ImpostorOverlay").style.display = "none";
         state.scanned[token] = { clue: clue.clue };
         state.lastClue = clue.clue;
         saveState(state); window.history.replaceState({}, "", window.location.pathname);
@@ -2026,15 +2298,8 @@
     /* ════════════════════════════════════════════════
        TRACK 2 — LEXICON
     ════════════════════════════════════════════════ */
-    function isValidT2Word(word, letters) {
-      if (word.length < 3) return false;
-      const pool = [...letters];
-      for (const ch of word.toUpperCase()) {
-        const idx = pool.indexOf(ch);
-        if (idx === -1) return false;
-        pool.splice(idx, 1);
-      }
-      return true;
+    function isValidT2Word(word) {
+      return Object.prototype.hasOwnProperty.call(T2_VALID_WORDS, word.toUpperCase());
     }
     function renderT2(state, fromStart = false) {
       showScreen("screen-t2");
@@ -2078,7 +2343,8 @@
       found.forEach(w => {
         const chip = document.createElement("div");
         chip.className = "t2-found-chip good";
-        chip.textContent = w;
+        const def = T2_VALID_WORDS[w] || "";
+        chip.innerHTML = `<strong>${w}</strong>${def ? `<span style="font-weight:400;font-size:11px;opacity:0.8"> — ${def}</span>` : ""}`;
         div.appendChild(chip);
       });
       const pct = Math.min(100, (found.length / T2_MIN_WORDS) * 100);
@@ -2090,12 +2356,12 @@
       const word = input.value.trim().toUpperCase();
       if (!word) return;
       const s = getState();
-      const scanned = s.scanned || {};
-      const letters = Array.from({ length: 8 }, (_, i) => { const e = Object.values(scanned).find(v => v.clue === i + 1); return e ? e.letter : null; }).filter(Boolean);
       const found = s.t2words || [];
       if (found.includes(word)) { t2FlashErr("Already found that one!"); input.value = ""; return; }
-      if (!isValidT2Word(word, letters)) { t2FlashErr("Use only your 8 letters (min 3)!"); input.value = ""; return; }
+      if (!isValidT2Word(word)) { t2FlashErr("Not a valid word from your letters!"); input.value = ""; return; }
       found.push(word); s.t2words = found; saveState(s);
+      const scanned = s.scanned || {};
+      const letters = Array.from({ length: 8 }, (_, i) => { const e = Object.values(scanned).find(v => v.clue === i + 1); return e ? e.letter : null; }).filter(Boolean);
       renderT2Words(found, letters);
       input.value = "";
     }
@@ -2122,82 +2388,182 @@
     /* ════════════════════════════════════════════════
        TRACK 3 — SPACE / AMONG US
     ════════════════════════════════════════════════ */
+    let t3ImpostorInterval = null;
+    let t3ImpostorSeconds = 120;
+
+    // Generate stars + random planets in background
     function spawnStars() {
       const bg = document.getElementById("starsBg");
       if (bg.children.length > 0) return;
-      for (let i = 0; i < 120; i++) {
+      // Stars
+      for (let i = 0; i < 180; i++) {
         const s = document.createElement("div");
         s.className = "star";
-        const sz = Math.random() * 2 + 0.5;
-        s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-duration:${2 + Math.random() * 4}s;animation-delay:${Math.random() * 4}s`;
+        const sz = Math.random() * 2.5 + 0.3;
+        s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-duration:${2 + Math.random() * 5}s;animation-delay:${Math.random() * 5}s`;
         bg.appendChild(s);
       }
+      // Planets (SVG circles with rings/glow)
+      const planetDefs = [
+        { size: 55, left: 8,  top: 12, col: "#7c3aed", glow: "#7c3aed44" },
+        { size: 38, left: 82, top: 8,  col: "#0ea5e9", glow: "#0ea5e944" },
+        { size: 70, left: 72, top: 55, col: "#f59e0b", glow: "#f59e0b33" },
+        { size: 28, left: 20, top: 68, col: "#22c55e", glow: "#22c55e33" },
+      ];
+      planetDefs.forEach(p => {
+        const el = document.createElement("div");
+        el.className = "planet";
+        el.style.cssText = `width:${p.size}px;height:${p.size}px;left:${p.left}%;top:${p.top}%;background:radial-gradient(circle at 35% 35%,${p.col}99,${p.col}22);box-shadow:0 0 ${p.size}px ${p.glow};animation:planetDrift ${4 + Math.random() * 3}s ease-in-out infinite alternate`;
+        bg.appendChild(el);
+      });
     }
+
+    // Render map markers based on completed tasks
+    function renderT3Map(scanned) {
+      const overlay = document.getElementById("t3MapOverlay");
+      const container = document.getElementById("t3MapContainer");
+      overlay.innerHTML = "";
+      const latestClue = Object.values(scanned).length > 0
+        ? Math.max(...Object.values(scanned).map(v => v.clue)) : null;
+
+      T3_TASKS.forEach((task, i) => {
+        const taskNum = i + 1;
+        const done = Object.values(scanned).some(v => v.clue === taskNum);
+        const marker = document.createElement("div");
+        marker.className = "t3-map-marker";
+        marker.style.left = task.mapX + "%";
+        marker.style.top = task.mapY + "%";
+        const iconSrc = done ? "task_complete.png" : "task_indicator.png";
+        marker.innerHTML = `<img src="${iconSrc}" alt="${done ? '✓' : '!'}" onerror="this.parentElement.innerHTML='${done ? '✅' : '❗'}'">`;
+        overlay.appendChild(marker);
+      });
+
+      // Player location marker — show at position of last scanned task
+      if (latestClue) {
+        const lastTask = T3_TASKS[latestClue - 1];
+        const player = document.createElement("div");
+        player.className = "t3-player-marker";
+        player.style.left = (lastTask.mapX + 4) + "%";
+        player.style.top = (lastTask.mapY - 4) + "%";
+        player.innerHTML = `<img src="player_location.png" alt="You" onerror="this.parentElement.innerHTML='▶'">`;
+        overlay.appendChild(player);
+      }
+    }
+
     function renderT3(state, fromStart = false) {
       showScreen("screen-t3");
       spawnStars();
       const scanned = state.scanned || {};
       const count = Object.keys(scanned).length;
 
+      // Header
+      document.getElementById("t3ProgressBadge").textContent = `${count} / 8`;
+
+      // Map always shown
+      renderT3Map(scanned);
+
       if (fromStart || count === 0) {
         document.getElementById("t3Title").textContent = "ENDO STATION";
         document.getElementById("t3Subtitle").textContent = "Emergency Task Protocol · Active";
-        show("t3IntroBox"); hide("t3TaskCard"); hide("t3Manifest");
-        hide("t3ProgressText"); hide("t3CompleteBanner");
+        show("t3IntroBox"); hide("t3TaskCard"); hide("t3Manifest"); hide("t3CompleteBanner");
+        // Show task manifest in intro state with all pending
+        renderT3Manifest(scanned);
+        show("t3Manifest");
         return;
       }
       hide("t3IntroBox");
 
+      // Latest task completed card
       const latestClue = state.lastClue;
       if (latestClue) {
         const task = T3_TASKS[latestClue - 1];
         document.getElementById("t3TaskName").textContent = task.name;
         document.getElementById("t3TaskDesc").textContent = task.desc;
-        const imgEl = document.getElementById("t3TaskImg");
-        imgEl.innerHTML = `<img src="${task.img}" alt="${task.name}" onerror="this.parentElement.innerHTML='<div class=&quot;placeholder-text&quot;>[ ${task.name} — add ${task.img} to your repo ]</div>'">`;
         show("t3TaskCard");
       }
 
-      const prog = document.getElementById("t3ProgressText");
-      prog.textContent = `${count} / 8 TASKS COMPLETE`;
-      show("t3ProgressText");
-
-      const list = document.getElementById("t3TaskList");
-      list.innerHTML = "";
-      T3_TASKS.forEach((task, i) => {
-        const done = Object.values(scanned).some(v => v.clue === i + 1);
-        const item = document.createElement("div");
-        item.className = `t3-task-item ${done ? 'done' : 'pending'}`;
-        item.innerHTML = `<div class="t3-task-dot"></div><div class="t3-task-item-name">${done ? '✓ ' : ' '}${task.name}</div>`;
-        list.appendChild(item);
-      });
+      renderT3Manifest(scanned);
       show("t3Manifest");
 
       if (count >= 8) {
         show("t3CompleteBanner");
         document.getElementById("t3Title").textContent = "MISSION COMPLETE";
         document.getElementById("t3Subtitle").textContent = "All Systems Restored";
+        hide("t3TaskCard");
         const s = getState(); if (!s.completed) { s.completed = true; saveState(s); }
       }
     }
 
+    function renderT3Manifest(scanned) {
+      const list = document.getElementById("t3TaskList");
+      list.innerHTML = "";
+      T3_TASKS.forEach((task, i) => {
+        const done = Object.values(scanned).some(v => v.clue === i + 1);
+        const item = document.createElement("div");
+        item.className = `t3-task-item ${done ? 'done' : 'pending'}`;
+        const iconSrc = done ? "task_complete.png" : "task_indicator.png";
+        item.innerHTML = `
+          <div class="t3-task-item-icon">
+            <img src="${iconSrc}" alt="${done ? '✓' : '!'}" onerror="this.parentElement.innerHTML='${done ? '✅' : '❗'}'">
+          </div>
+          <div class="t3-task-item-name">${task.name}</div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    // Called when a non-T3 QR is scanned while on T3
+    function triggerT3Impostor() {
+      clearT3ImpostorTimer();
+      t3ImpostorSeconds = 120;
+      const overlay = document.getElementById("t3ImpostorOverlay");
+      overlay.style.display = "flex";
+      updateT3TimerDisplay();
+      const circumference = 238.76;
+      const ring = document.getElementById("t3TimerRing");
+      ring.style.strokeDashoffset = "0";
+      t3ImpostorInterval = setInterval(() => {
+        t3ImpostorSeconds--;
+        updateT3TimerDisplay();
+        const progress = t3ImpostorSeconds / 120;
+        ring.style.strokeDashoffset = circumference * (1 - progress);
+        if (t3ImpostorSeconds <= 0) {
+          clearT3ImpostorTimer();
+          overlay.style.display = "none";
+          // DEATH — reset T3 progress
+          let s = getState();
+          s.scanned = {};
+          s.lastClue = null;
+          saveState(s);
+          renderT3(s, true);
+          // Show death message briefly
+          const msg = document.createElement("div");
+          msg.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a0000;border:2px solid #EA4335;color:#EA4335;font-weight:700;font-size:22px;padding:24px 32px;z-index:200;border-radius:6px;text-align:center;";
+          msg.innerHTML = "💀 YOU DIED<br><span style='font-size:13px;color:#fca5a5;font-weight:400'>Progress reset. Start over, crewmate.</span>";
+          document.body.appendChild(msg);
+          setTimeout(() => msg.remove(), 3000);
+        }
+      }, 1000);
+    }
+
+    function clearT3ImpostorTimer() {
+      if (t3ImpostorInterval) { clearInterval(t3ImpostorInterval); t3ImpostorInterval = null; }
+    }
+
+    function updateT3TimerDisplay() {
+      const m = Math.floor(t3ImpostorSeconds / 60);
+      const s = t3ImpostorSeconds % 60;
+      document.getElementById("t3TimerNum").textContent = `${m}:${s.toString().padStart(2, "0")}`;
+    }
+
+    // Dismiss impostor overlay when correct T3 QR is scanned (handled in handleClue)
+
     /* ════════════════════════════════════════════════
        TRACK 4 — WORDLE (GATED)
-
-       State extras:
-         wordlesSolved  — wordles completed (0-8)
-         qrScanned      — QRs scanned (0-8)
-         t4Guesses      — persisted guesses for current active wordle
-         t4ExactEarned  — array[8] booleans, true if solved that wordle in ≤5 attempts
-
-       Attempt rules:
-         ≤5 attempts  → exact location hint revealed immediately on solve + shown on "find QR" screen
-         6-7 attempts → special hint locked, can still solve
-         >7 attempts  → auto-reset (guesses cleared, special hint permanently lost for this wordle)
-         180s timer   → vague hint regardless of attempts
     ════════════════════════════════════════════════ */
-    const T4_MAX_ATTEMPTS   = 7; // hard reset after this many failed guesses
-    const T4_SPECIAL_CUTOFF = 5; // must solve within this many for exact hint
+    // State: { track:4, wordlesSolved:0, qrScanned:0, scanned:{}, t4Guesses:[] }
+    // wordlesSolved === qrScanned → show wordle #(wordlesSolved+1)
+    // wordlesSolved > qrScanned  → show "go find QR" screen
 
     let t4HintTimer = null;
     let t4WordleActive = { word: "", guesses: [], currentGuess: "", done: false };
@@ -2207,8 +2573,8 @@
       const t = TRACKS[4]; setBadge("t4Badge", t);
       if (t4HintTimer) { clearTimeout(t4HintTimer); t4HintTimer = null; }
 
-      const solved  = state.wordlesSolved || 0;
-      const scanned = state.qrScanned    || 0;
+      const solved = state.wordlesSolved || 0;
+      const scanned = state.qrScanned || 0;
 
       renderT4Dots(solved, scanned);
 
@@ -2217,67 +2583,41 @@
         showComplete(state, "All 8 Wordles solved! 🟩"); return;
       }
 
-      // Solved a wordle — waiting to scan QR
+      // Solved a wordle, need to go find the QR
       if (solved > scanned) {
         hide("t4WordleCard"); hide("wordleKeyboard"); hide("t4HintBox");
         show("t4FoundLocation");
         const word = T4_WORDS[scanned].toUpperCase();
         document.getElementById("t4LocationWord").textContent = word;
         document.getElementById("t4LocationProgress").textContent =
-          `QR ${scanned + 1} of 8 — scan it to unlock Wordle #${scanned + 2}`;
-        // Show exact location if earned for this wordle index
-        const earned = (state.t4ExactEarned || [])[scanned];
-        const exactBox = document.getElementById("t4LocationExactHint");
-        if (earned) {
-          document.getElementById("t4LocationExactText").textContent = T4_EXACT[scanned];
-          exactBox.style.display = "block";
-        } else {
-          exactBox.style.display = "none";
-        }
+          `QR ${scanned + 1} of 8 — scan it to unlock the next Wordle`;
         return;
       }
 
-      // Active wordle
-      hide("t4FoundLocation"); hide("t4SpecialHint");
-      show("t4WordleCard"); show("wordleKeyboard");
+      // Need to solve next wordle
+      hide("t4FoundLocation"); show("t4WordleCard"); show("wordleKeyboard");
 
       const wordleNum = solved + 1;
       const word = T4_WORDS[solved].toUpperCase();
       document.getElementById("t4WordleLabel").textContent = `Wordle #${wordleNum} of 8`;
       document.getElementById("t4Instruction").textContent =
-        `Guess the ${word.length}-letter word — it's the location of QR code #${wordleNum}.`;
+        `Guess the ${word.length}-letter word. It's the location of QR code #${wordleNum}.`;
 
+      // Restore or init
       const savedGuesses = state.t4Guesses || [];
       t4WordleActive = { word, guesses: [...savedGuesses], currentGuess: "", done: false };
 
-      updateT4AttemptUI();
       renderWordleGrid();
       renderWordleKeyboard();
       hide("t4Msg");
 
-      // 180s vague hint timer
+      // Hint timer — 120s
       const hintBox = document.getElementById("t4HintBox");
       hintBox.style.display = "none";
       t4HintTimer = setTimeout(() => {
-        hintBox.innerHTML = `💡 <strong>Vague hint:</strong> ${T4_VAGUE[solved]}`;
+        hintBox.innerHTML = `💡 <strong>Hint:</strong> ${T4_HINTS[solved]}`;
         hintBox.style.display = "block";
-      }, 180000);
-    }
-
-    // Updates attempt counter label + special-hint warning chip
-    function updateT4AttemptUI() {
-      const used = t4WordleActive.guesses.length;
-      const remaining = T4_SPECIAL_CUTOFF - used;
-      document.getElementById("t4AttemptCounter").textContent = `${used} / ${T4_MAX_ATTEMPTS} attempts`;
-      const warning = document.getElementById("t4SpecialWarning");
-      const attemptsLeftEl = document.getElementById("t4AttemptsLeft");
-      if (remaining > 0) {
-        warning.style.display = "block";
-        attemptsLeftEl.textContent = remaining;
-      } else {
-        // Past 5 — special hint gone, hide warning
-        warning.style.display = "none";
-      }
+      }, 120000);
     }
 
     function renderT4Dots(solved, scanned) {
@@ -2285,10 +2625,10 @@
       dots.innerHTML = "";
       for (let i = 0; i < 8; i++) {
         const d = document.createElement("div");
-        if (i < scanned)       d.className = "t4-dot done";
-        else if (i < solved)   d.className = "t4-dot waiting";
+        if (i < scanned) d.className = "t4-dot done";
+        else if (i < solved) d.className = "t4-dot waiting";
         else if (i === solved) d.className = "t4-dot current";
-        else                   d.className = "t4-dot pending";
+        else d.className = "t4-dot pending";
         dots.appendChild(d);
       }
     }
@@ -2298,12 +2638,13 @@
       grid.innerHTML = "";
       const { word, guesses, currentGuess } = t4WordleActive;
       const len = word.length;
-      for (let r = 0; r < T4_MAX_ATTEMPTS; r++) {
+      for (let r = 0; r < 6; r++) {
         const row = document.createElement("div");
         row.className = "wordle-row";
         for (let c = 0; c < len; c++) {
           const cell = document.createElement("div");
           cell.className = "wordle-cell";
+          cell.id = `wc-${r}-${c}`;
           if (r < guesses.length) {
             const res = scoreGuess(guesses[r], word);
             cell.textContent = guesses[r][c];
@@ -2333,11 +2674,7 @@
     function renderWordleKeyboard() {
       const kb = document.getElementById("wordleKeyboard");
       kb.innerHTML = "";
-      const rows = [
-        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-        ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-        ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "⌫"]
-      ];
+      const rows = [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "⌫"]];
       const keyStates = {};
       t4WordleActive.guesses.forEach(g => {
         const res = scoreGuess(g, t4WordleActive.word);
@@ -2368,101 +2705,68 @@
 
       if (key === "⌫" || key === "BACKSPACE") {
         t4WordleActive.currentGuess = t4WordleActive.currentGuess.slice(0, -1);
-        renderWordleGrid(); return;
-      }
-
-      if (key === "ENTER") {
+      } else if (key === "ENTER") {
         if (t4WordleActive.currentGuess.length !== word.length) {
           showMsg("t4Msg", "err", `Word must be ${word.length} letters!`); renderWordleGrid(); return;
         }
         const guess = t4WordleActive.currentGuess.toUpperCase();
         t4WordleActive.guesses.push(guess);
         t4WordleActive.currentGuess = "";
-
-        const s = getState();
-        s.t4Guesses = t4WordleActive.guesses;
-        saveState(s);
-
-        const attemptNum = t4WordleActive.guesses.length;
-        const wordleIdx  = s.wordlesSolved || 0;
+        // Persist guesses
+        const s = getState(); s.t4Guesses = t4WordleActive.guesses; saveState(s);
 
         if (guess === word) {
-          // ── SOLVED ──
+          // SOLVED
           t4WordleActive.done = true;
+          renderWordleGrid(); renderWordleKeyboard();
+          showMsg("t4Msg", "ok", `✅ Correct! Go find QR #${(s.wordlesSolved || 0) + 1} at that location!`);
           if (t4HintTimer) { clearTimeout(t4HintTimer); t4HintTimer = null; }
           document.getElementById("t4HintBox").style.display = "none";
-
-          const earnedExact = attemptNum <= T4_SPECIAL_CUTOFF;
-          if (!s.t4ExactEarned) s.t4ExactEarned = [];
-          s.t4ExactEarned[wordleIdx] = earnedExact;
-          s.wordlesSolved = wordleIdx + 1;
-          s.t4Guesses = [];
+          s.wordlesSolved = (s.wordlesSolved || 0) + 1;
+          s.t4Guesses = []; // reset for next wordle
           saveState(s);
-
-          renderWordleGrid(); renderWordleKeyboard(); updateT4AttemptUI();
-
-          if (earnedExact) {
-            // Show exact hint inline immediately
-            document.getElementById("t4SpecialHintText").textContent = T4_EXACT[wordleIdx];
-            show("t4SpecialHint");
-            hide("t4SpecialWarning");
-            showMsg("t4Msg", "ok", `✅ Solved in ${attemptNum}! 🎯 Exact location unlocked — see below!`);
-          } else {
-            showMsg("t4Msg", "ok", `✅ Correct! You know the location — go find QR #${wordleIdx + 1}!`);
-          }
-          setTimeout(() => renderT4(s), earnedExact ? 3000 : 1800);
-
-        } else if (attemptNum >= T4_MAX_ATTEMPTS) {
-          // ── FAILED 7 attempts — hard reset, special hint permanently lost ──
+          setTimeout(() => renderT4(s), 1800);
+        } else if (t4WordleActive.guesses.length >= 6) {
+          // FAILED — reset silently after 2.5s
           t4WordleActive.done = true;
-          renderWordleGrid(); renderWordleKeyboard(); updateT4AttemptUI();
-          showMsg("t4Msg", "err", `❌ Out of attempts. Resetting — special hint is gone for this one.`);
-          if (!s.t4ExactEarned) s.t4ExactEarned = [];
-          s.t4ExactEarned[wordleIdx] = false;
-          s.t4Guesses = [];
-          saveState(s);
+          renderWordleGrid(); renderWordleKeyboard();
+          showMsg("t4Msg", "err", `The word was ${word}. Try again!`);
           setTimeout(() => {
             t4WordleActive = { word, guesses: [], currentGuess: "", done: false };
             const s2 = getState(); s2.t4Guesses = []; saveState(s2);
             renderWordleGrid(); renderWordleKeyboard(); hide("t4Msg");
-            updateT4AttemptUI();
-          }, 2800);
-
+          }, 2500);
         } else {
-          renderWordleGrid(); renderWordleKeyboard(); updateT4AttemptUI();
+          renderWordleGrid(); renderWordleKeyboard();
         }
-        return;
-      }
-
-      if (/^[A-Z]$/.test(key)) {
+      } else if (/^[A-Z]$/.test(key)) {
         if (t4WordleActive.currentGuess.length < word.length)
           t4WordleActive.currentGuess += key;
         renderWordleGrid();
       }
     }
 
-    // T4 clue scan — only valid after solving the corresponding wordle
+    // T4 clue scan: only accepted if they've solved the corresponding wordle
     function handleT4ClueScan(token, clue, state) {
-      const solved  = state.wordlesSolved || 0;
-      const scanned = state.qrScanned    || 0;
+      const solved = state.wordlesSolved || 0;
+      const scanned = state.qrScanned || 0;
 
       if (solved <= scanned) {
+        // Haven't solved current wordle yet
         window.history.replaceState({}, "", window.location.pathname);
         renderT4(state);
-        show("t4WordleCard");
-        showMsg("t4Msg", "err", "Solve the current Wordle first, then come scan this!");
-        return;
+        showMsg("t4Msg", "err", "Solve the current Wordle first!");
+        show("t4WordleCard"); return;
       }
       if (clue.clue !== scanned + 1) {
         window.history.replaceState({}, "", window.location.pathname);
         renderT4(state);
-        show("t4WordleCard");
         showMsg("t4Msg", "err", `That's QR #${clue.clue}, but you need QR #${scanned + 1} right now.`);
-        return;
+        show("t4WordleCard"); return;
       }
 
       state.scanned[token] = { clue: clue.clue };
-      state.qrScanned = scanned + 1;
+      state.qrScanned = (state.qrScanned || 0) + 1;
       state.t4Guesses = [];
       saveState(state);
       window.history.replaceState({}, "", window.location.pathname);
