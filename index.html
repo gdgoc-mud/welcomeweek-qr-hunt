@@ -1947,48 +1947,54 @@
     };
 
     // TRACK 3 — Crewmate / Among Us
-    // mapX/mapY are percentage positions on the campus_map.png image
-    // These match the map you provided — tweak the % values after testing if needed
+    // ─────────────────────────────────────────────────────────────────
+    // MAP COORDINATES — edit these to position markers on campus_map.png
+    // Values are percentages (0–100) of the image width/height.
+    // Open campus_map.png in any image editor, hover over the spot you
+    // want, read the pixel coords, then divide by image width/height × 100.
+    // ─────────────────────────────────────────────────────────────────
+    const T3_PLAYER_START = { x: 72, y: 74 };  // Touchdown 118 — starting position
+
     const T3_TASKS = [
       {
         name: "Faulty Reactor-core Garbage Disposal",
         desc: "Kid let me tell you something… never buy a reactor-core from a SoCal AI startup company… I learned that mistake the hard way. Take this faulty reactor to the ship's garbage disposal unit and throw it away. The disposal unit should be located in the bottom of the ship.",
-        mapX: 38, mapY: 82,  // First floor stairs door — bottom of map
+        mapX: 38, mapY: 82,  // ← EDIT: First floor stairs door
       },
       {
         name: "Make Ship Sustenance Burger-goo",
         desc: "In order to adequately pilot the navigation of our ship, our navigation lead needs to… refuel… As per his requests, a scrumptious burger is to be delivered. Located in the pantry fridge are the ingredients for The Perfect Burger-goo™, please prepare the burger and notify our navigation lead using the QR code.",
-        mapX: 50, mapY: 14,  // Cafeteria (Pantry) — top right area
+        mapX: 50, mapY: 14,  // ← EDIT: Cafeteria (Pantry)
       },
       {
         name: "Find the Impostor",
         desc: "WARNING: IMPOSTOR FOUND IN ADMIN. Watch your back kid, an impostor was found in the Admin room 10 minutes ago. Security cameras found them in the middle of two innocent astronauts. Locate the impostor to save your fellow comrades!",
-        mapX: 43, mapY: 34,  // Admin (Lobby) — center-left
+        mapX: 43, mapY: 34,  // ← EDIT: Admin (Lobby)
       },
       {
         name: "Fix Wiring in Electrical",
         desc: "Our communication systems have been going haywire recently and we need your help. Head to Electrical and fix the short circuit by rewiring the circuit. The notorious ghost gang seems to be the culprit.",
-        mapX: 18, mapY: 75,  // Electrical (Games Room) — bottom left
+        mapX: 18, mapY: 75,  // ← EDIT: Electrical (Games Room)
       },
       {
         name: "Water the Plants",
         desc: "There seems to be a leak in the automatic water dispenser, patch the water pot leak and water the plants.",
-        mapX: 32, mapY: 24,  // Weapons (Rest Zone) — top left area
+        mapX: 32, mapY: 24,  // ← EDIT: Weapons (Rest Zone)
       },
       {
         name: "Locate our Missing Robot Helper",
         desc: "Our robot seems to be malfunctioning or simply slacking off... Put it in rice or smack the back of the metal to wake it up. Do what needs to be done — get it to work, the trash needs to be taken out.",
-        mapX: 72, mapY: 74,  // Cockpit (Touchdown 118) — bottom right
+        mapX: 72, mapY: 74,  // ← EDIT: Cockpit (Touchdown 118)
       },
       {
         name: "Destroy Meteors",
         desc: "Enemy towers are spotted harbouring lasers and spy tech. Look over and under each of their spyware tech and find their main power outlet and cut their source clean. We're counting on you, comrade.",
-        mapX: 55, mapY: 34,  // Navigation (Xbox Room) — center
+        mapX: 55, mapY: 34,  // ← EDIT: Navigation (Xbox Room)
       },
       {
         name: "Catch the (Alien) Predator",
         desc: "The spaceship flashes red. Message blaring through the system speakers: \"There's been a breach in the containment, foreign entity detected.\" Catch the predator before it causes havoc and disrupts system functioning.",
-        mapX: 44, mapY: 62,  // Corridor near restrooms — center bottom area
+        mapX: 44, mapY: 62,  // ← EDIT: Outside men's restroom
       },
     ];
     const T3_CLUES = {
