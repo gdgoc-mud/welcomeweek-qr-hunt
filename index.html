@@ -788,13 +788,25 @@
     }
 
     @keyframes twinkle {
-      0%, 100% { opacity: 0.15; }
-      50% { opacity: 1; }
+
+      0%,
+      100% {
+        opacity: 0.15;
+      }
+
+      50% {
+        opacity: 1;
+      }
     }
 
     @keyframes planetDrift {
-      0% { transform: translateY(0px) rotate(0deg); }
-      100% { transform: translateY(-12px) rotate(5deg); }
+      0% {
+        transform: translateY(0px) rotate(0deg);
+      }
+
+      100% {
+        transform: translateY(-12px) rotate(5deg);
+      }
     }
 
     .t3-content {
@@ -834,8 +846,15 @@
     }
 
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-5px);
+      }
     }
 
     .t3-title {
@@ -932,8 +951,15 @@
     }
 
     @keyframes playerPulse {
-      0%, 100% { filter: drop-shadow(0 0 4px #ea4335); }
-      50% { filter: drop-shadow(0 0 10px #ea4335); }
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 4px #ea4335);
+      }
+
+      50% {
+        filter: drop-shadow(0 0 10px #ea4335);
+      }
     }
 
     /* Task card */
@@ -1020,7 +1046,8 @@
       align-items: center;
       gap: 8px;
       cursor: pointer;
-      list-style: none; /* Hide default arrow */
+      list-style: none;
+      /* Hide default arrow */
     }
 
     .t3-task-item summary::-webkit-details-marker {
@@ -1031,7 +1058,8 @@
       font-size: 11px;
       color: #cbd5e1;
       padding-top: 6px;
-      padding-left: 26px; /* align with text */
+      padding-left: 26px;
+      /* align with text */
       line-height: 1.4;
     }
 
@@ -1040,7 +1068,7 @@
       border: 2px solid #4ade80;
       box-shadow: 3px 3px 0 #4ade80;
     }
-    
+
     .t3-task-item.pending {
       background: transparent;
       border: 2px solid #64748b;
@@ -1064,16 +1092,30 @@
       font-weight: 500;
     }
 
-    .t3-task-item.done .t3-task-item-name { color: #86efac; }
-    .t3-task-item.pending .t3-task-item-name { color: #f8fafc; }
+    .t3-task-item.done .t3-task-item-name {
+      color: #86efac;
+    }
+
+    .t3-task-item.pending .t3-task-item-name {
+      color: #f8fafc;
+    }
 
     .t3-task-item[open] .t3-task-item-desc {
       animation: sweepDown 0.3s ease-out forwards;
     }
 
     @keyframes sweepDown {
-      from { opacity: 0; transform: translateY(-5px); margin-top: -10px; }
-      to { opacity: 1; transform: translateY(0); margin-top: 0; }
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+        margin-top: -10px;
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+        margin-top: 0;
+      }
     }
 
     .t3-expand-icon {
@@ -1134,8 +1176,15 @@
     }
 
     @keyframes redFlash {
-      0%, 100% { box-shadow: 0 0 30px #ea433544; }
-      50% { box-shadow: 0 0 60px #ea4335aa; }
+
+      0%,
+      100% {
+        box-shadow: 0 0 30px #ea433544;
+      }
+
+      50% {
+        box-shadow: 0 0 60px #ea4335aa;
+      }
     }
 
     .t3-impostor-title {
@@ -1243,7 +1292,10 @@
       border-radius: 4px;
     }
 
-    .t3-btn:hover { color: #7dd3fc; border-color: #7dd3fc44; }
+    .t3-btn:hover {
+      color: #7dd3fc;
+      border-color: #7dd3fc44;
+    }
 
     /* ═══════════════════════════════════
    TRACK 4 — WORDLE
@@ -1251,33 +1303,6 @@
     #screen-t4 {
       padding: 32px 20px 60px;
       gap: 14px;
-      background: #050510;
-      color: #fff;
-    }
-
-    #screen-t4 .nb-card {
-      background: #0a0f2e;
-      border: 3px solid #7dd3fc;
-      box-shadow: 6px 6px 0 #7dd3fc;
-      color: #e0f2fe;
-    }
-
-    #screen-t4 .nb-label {
-      color: #7dd3fc;
-    }
-
-    #screen-t4 .nb-track-badge {
-      background: transparent;
-      border: 2px solid #7dd3fc;
-      box-shadow: 4px 4px 0 #7dd3fc;
-      color: #fff;
-    }
-
-    #screen-t4 .nb-btn-ghost {
-      border: 2px dashed #7dd3fc;
-      background: rgba(125, 211, 252, 0.1);
-      color: #7dd3fc;
-      box-shadow: none;
     }
 
     .wordle-grid {
@@ -1295,7 +1320,7 @@
     .wordle-cell {
       width: 52px;
       height: 52px;
-      border: 3px solid #64748b;
+      border: var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1303,35 +1328,35 @@
       font-size: 20px;
       text-transform: uppercase;
       transition: all 0.3s;
-      background: transparent;
-      color: #fff;
-      box-shadow: 3px 3px 0 #64748b;
+      background: var(--paper);
+      color: var(--ink);
+      box-shadow: var(--shadow-sm);
     }
 
     .wordle-cell.correct {
-      background: #052e16;
-      color: #86efac;
-      border-color: #4ade80;
-      box-shadow: 3px 3px 0 #4ade80;
+      background: #ceead6;
+      color: var(--ink);
+      border-color: #34A853;
+      box-shadow: 3px 3px 0 #34A853;
     }
 
     .wordle-cell.present {
-      background: #451a03;
-      color: #fde047;
-      border-color: #facc15;
-      box-shadow: 3px 3px 0 #facc15;
+      background: #fef08a;
+      color: var(--ink);
+      border-color: #FBBC04;
+      box-shadow: 3px 3px 0 #FBBC04;
     }
 
     .wordle-cell.absent {
-      background: #0f172a;
-      color: #475569;
-      border-color: #1e293b;
-      box-shadow: 3px 3px 0 #1e293b;
+      background: #e8e8e8;
+      color: #888;
+      border-color: #aaa;
+      box-shadow: 3px 3px 0 #aaa;
     }
 
     .wordle-cell.filled {
-      border-color: #7dd3fc;
-      box-shadow: 3px 3px 0 #7dd3fc;
+      border-color: var(--ink);
+      box-shadow: var(--shadow-sm);
     }
 
     .wordle-keyboard {
@@ -1351,15 +1376,15 @@
     .w-key {
       padding: 12px 6px;
       min-width: 30px;
-      background: #0a0f2e;
-      border: 2px solid #7dd3fc;
-      color: #e0f2fe;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      color: var(--ink);
       font-family: var(--gs);
       font-weight: 700;
       font-size: 12px;
       cursor: pointer;
       text-transform: uppercase;
-      box-shadow: 3px 3px 0 #7dd3fc;
+      box-shadow: 3px 3px 0 var(--ink);
       transition: all 0.15s;
       text-align: center;
     }
@@ -1375,24 +1400,24 @@
     }
 
     .w-key.correct {
-      background: #052e16;
-      color: #86efac;
-      border-color: #4ade80;
-      box-shadow: 3px 3px 0 #4ade80;
+      background: #ceead6;
+      color: var(--ink);
+      border-color: #34A853;
+      box-shadow: 3px 3px 0 #34A853;
     }
 
     .w-key.present {
-      background: #451a03;
-      color: #fde047;
-      border-color: #facc15;
-      box-shadow: 3px 3px 0 #facc15;
+      background: #fef08a;
+      color: var(--ink);
+      border-color: #FBBC04;
+      box-shadow: 3px 3px 0 #FBBC04;
     }
 
     .w-key.absent {
-      background: #0f172a;
-      color: #475569;
-      border-color: #1e293b;
-      box-shadow: 3px 3px 0 #1e293b;
+      background: #e8e8e8;
+      color: #888;
+      border-color: #aaa;
+      box-shadow: 3px 3px 0 #aaa;
     }
 
     .t4-dots {
@@ -1405,26 +1430,26 @@
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      border: 2px solid #64748b;
-      box-shadow: 2px 2px 0 #64748b;
+      border: 2px solid var(--ink);
+      box-shadow: 2px 2px 0 var(--ink);
     }
 
     .t4-dot.done {
-      background: #4ade80;
-      border-color: #22c55e;
-      box-shadow: 2px 2px 0 #22c55e;
+      background: #34A853;
+      border-color: #34A853;
+      box-shadow: 2px 2px 0 #34A853;
     }
 
     .t4-dot.waiting {
-      background: #facc15;
-      border-color: #eab308;
-      box-shadow: 2px 2px 0 #eab308;
+      background: #FBBC04;
+      border-color: #FBBC04;
+      box-shadow: 2px 2px 0 #FBBC04;
     }
 
     .t4-dot.current {
-      background: #7dd3fc;
-      border-color: #38bdf8;
-      box-shadow: 2px 2px 0 #38bdf8;
+      background: #4285F4;
+      border-color: #4285F4;
+      box-shadow: 2px 2px 0 #4285F4;
       animation: pulse 1s infinite;
     }
 
@@ -1436,20 +1461,20 @@
       width: 100%;
       max-width: 500px;
       padding: 10px 16px;
-      background: #451a03;
-      border: 2px solid #facc15;
-      box-shadow: 4px 4px 0 #facc15;
+      background: #fef08a;
+      border: var(--border);
+      box-shadow: 4px 4px 0 #FBBC04;
       font-size: 13px;
-      color: #fef08a;
+      color: var(--ink);
       text-align: center;
       display: none;
     }
 
     .t4-found-location {
-      background: #0a0f2e;
-      color: #e0f2fe;
-      border: 3px solid #7dd3fc;
-      box-shadow: 6px 6px 0 #7dd3fc;
+      background: var(--paper);
+      color: var(--ink);
+      border: var(--border);
+      box-shadow: var(--shadow-lg);
       padding: 20px;
       text-align: center;
       width: 100%;
@@ -1460,14 +1485,13 @@
       font-weight: 700;
       font-size: 36px;
       letter-spacing: 3px;
-      color: #4ade80;
+      color: #34A853;
       margin: 8px 0;
-      text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
     }
 
     .t4-found-location p {
       font-size: 13px;
-      color: #7dd3fc;
+      color: var(--ink-mid);
       font-family: var(--gm);
     }
 
@@ -1684,7 +1708,8 @@
     <div class="nb-card" style="max-width:500px;margin-top:40px;text-align:center">
       <div class="big-icon">📍</div>
       <div class="big-title" style="font-size:28px">Head to the Booth First!</div>
-      <div class="big-body" style="margin-top:8px">You need to pick a pathway before scanning field QR codes. Head over to the <strong>GDGoC stall in Touchdown 118</strong> to begin the quest!</div>
+      <div class="big-body" style="margin-top:8px">You need to pick a pathway before scanning field QR codes. Head over
+        to the <strong>GDGoC stall in Touchdown 118</strong> to begin the quest!</div>
     </div>
   </div>
 
@@ -1792,7 +1817,8 @@
 
     <div id="t2InputCard" class="nb-card" style="max-width:500px;display:none">
       <div class="nb-label">Make Words</div>
-      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:12px">Type words you can make from the letters <strong>G D G O C M U D</strong>. Only valid words count — find at least 6 to win!</div>
+      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:12px">Type words you can make from the letters
+        <strong>G D G O C M U D</strong>. Only valid words count — find at least 6 to win!</div>
       <div class="t2-score-bar" style="margin-bottom:8px">
         <div class="t2-score-fill" id="t2ScoreFill" style="width:0%"></div>
       </div>
@@ -1823,13 +1849,13 @@
         <div class="t3-impostor-title">⚠ IMPOSTOR DETECTED</div>
         <div class="t3-impostor-subtitle">WRONG QR CODE SCANNED</div>
         <img src="guardian_angel.png" class="t3-guardian-angel" alt="Guardian Angel"
-             onerror="this.style.display='none';document.getElementById('t3GuardianFallback').style.display='block'">
+          onerror="this.style.display='none';document.getElementById('t3GuardianFallback').style.display='block'">
         <div class="t3-guardian-fallback" id="t3GuardianFallback" style="display:none">👼</div>
         <div class="t3-timer-ring">
           <svg width="90" height="90" viewBox="0 0 90 90">
-            <circle class="ring-bg" cx="45" cy="45" r="38"/>
-            <circle class="ring-fill" id="t3TimerRing" cx="45" cy="45" r="38"
-              stroke-dasharray="238.76" stroke-dashoffset="0"/>
+            <circle class="ring-bg" cx="45" cy="45" r="38" />
+            <circle class="ring-fill" id="t3TimerRing" cx="45" cy="45" r="38" stroke-dasharray="238.76"
+              stroke-dashoffset="0" />
           </svg>
           <div class="t3-timer-num" id="t3TimerNum">2:00</div>
         </div>
@@ -1854,8 +1880,7 @@
       <div class="t3-map-wrap" id="t3MapWrap">
         <div class="t3-map-label">📡 Station Map — Endo Campus</div>
         <div class="t3-map-container" id="t3MapContainer">
-          <img src="campus_map.png" class="map-base" alt="Campus Map"
-               onerror="this.style.opacity='0.3'">
+          <img src="campus_map.png" class="map-base" alt="Campus Map" onerror="this.style.opacity='0.3'">
           <div class="t3-map-overlay" id="t3MapOverlay"></div>
         </div>
       </div>
@@ -1864,8 +1889,10 @@
       <div class="t3-intro-box" id="t3IntroBox" style="display:none">
         <div style="font-size:40px;margin-bottom:10px">👨‍🚀</div>
         <div style="font-weight:700;font-size:18px;color:#7dd3fc">Welcome aboard, Crewmate.</div>
-        <p>The Endo Axiom has been compromised. Systems are failing across the campus. Your mission: locate and complete all 8 emergency tasks hidden around the station to restore full operation. Tasks can be done in any order.</p>
-        <p style="margin-top:10px;color:#334155;font-family:var(--gm);font-size:10px;letter-spacing:1px">BEWARE: NON-PATHWAY QR CODES ARE IMPOSTOR CODES</p>
+        <p>The Endo Axiom has been compromised. Systems are failing across the campus. Your mission: locate and complete
+          all 8 emergency tasks hidden around the station to restore full operation. Tasks can be done in any order.</p>
+        <p style="margin-top:10px;color:#334155;font-family:var(--gm);font-size:10px;letter-spacing:1px">BEWARE:
+          NON-PATHWAY QR CODES ARE IMPOSTOR CODES</p>
       </div>
 
       <!-- Current task card (shown after each scan) -->
@@ -1892,7 +1919,8 @@
       <div class="t3-complete-banner" id="t3CompleteBanner" style="display:none">
         <div style="font-size:36px;margin-bottom:8px">✅</div>
         <div class="t3-title">All Systems Restored!</div>
-        <div style="font-size:13px;color:#86efac;margin-top:8px">Endo Axiom is fully operational. Head to the GDGoC booth and show this screen!</div>
+        <div style="font-size:13px;color:#86efac;margin-top:8px">Endo Axiom is fully operational. Head to the GDGoC
+          booth and show this screen!</div>
       </div>
 
       <button class="t3-btn" onclick="resetProgress()">↩ Switch pathway</button>
@@ -1911,8 +1939,8 @@
 
     <!-- Wordle UI -->
     <div class="nb-card" id="t4WordleCard" style="max-width:500px;display:none">
-      <div class="nb-label" id="t4WordleLabel" style="color: #7dd3fc;">Wordle #1 of 8</div>
-      <div style="font-size:13px;color:#cbd5e1;margin-bottom:14px" id="t4Instruction"></div>
+      <div class="nb-label" id="t4WordleLabel">Wordle #1 of 8</div>
+      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:14px" id="t4Instruction"></div>
       <div class="wordle-grid" id="wordleGrid" style="margin-bottom:10px"></div>
       <div id="t4Msg" class="msg-box" style="display:none;margin-top:8px"></div>
     </div>
@@ -2019,16 +2047,16 @@
     const T2_MIN_WORDS = 6;
     // Only these words are valid — all formable from G,D,G,O,C,M,U,D
     const T2_VALID_WORDS = {
-      "COG":  "A tooth on a wheel or gear.",
-      "DOC":  "Short for doctor or document.",
-      "DOG":  "Our favorite four-legged friends.",
-      "DUD":  "Something that fails to work.",
-      "DUG":  "Past tense of dig.",
-      "GOD":  "A deity or supreme being.",
-      "GUM":  "Chewing gum or the tissue around teeth.",
-      "MOD":  "Short for modern or modification.",
-      "MUD":  "Wet, sticky earth.",
-      "MUG":  "A large cup or a slang term for a face.",
+      "COG": "A tooth on a wheel or gear.",
+      "DOC": "Short for doctor or document.",
+      "DOG": "Our favorite four-legged friends.",
+      "DUD": "Something that fails to work.",
+      "DUG": "Past tense of dig.",
+      "GOD": "A deity or supreme being.",
+      "GUM": "Chewing gum or the tissue around teeth.",
+      "MOD": "Short for modern or modification.",
+      "MUD": "Wet, sticky earth.",
+      "MUG": "A large cup or a slang term for a face.",
       "DOUG": "A common English name.",
     };
     const T2_CLUES = {
@@ -2518,8 +2546,8 @@
       }
       // Planets (SVG circles with rings/glow)
       const planetDefs = [
-        { size: 55, left: 8,  top: 12, col: "#7c3aed", glow: "#7c3aed44" },
-        { size: 38, left: 82, top: 8,  col: "#0ea5e9", glow: "#0ea5e944" },
+        { size: 55, left: 8, top: 12, col: "#7c3aed", glow: "#7c3aed44" },
+        { size: 38, left: 82, top: 8, col: "#0ea5e9", glow: "#0ea5e944" },
         { size: 70, left: 72, top: 55, col: "#f59e0b", glow: "#f59e0b33" },
         { size: 28, left: 20, top: 68, col: "#22c55e", glow: "#22c55e33" },
       ];
@@ -2537,7 +2565,7 @@
       const overlay = document.getElementById("t3MapOverlay");
       const container = document.getElementById("t3MapContainer");
       overlay.innerHTML = "";
-      
+
       let playerPos = T3_PLAYER_START;
       if (state.lastClue) {
         const lastTask = T3_TASKS[state.lastClue - 1];
@@ -2824,6 +2852,7 @@
 
       if (key === "⌫" || key === "BACKSPACE") {
         t4WordleActive.currentGuess = t4WordleActive.currentGuess.slice(0, -1);
+        renderWordleGrid();
       } else if (key === "ENTER") {
         if (t4WordleActive.currentGuess.length !== word.length) {
           showMsg("t4Msg", "err", `Word must be ${word.length} letters!`); renderWordleGrid(); return;
@@ -3106,7 +3135,7 @@
       if (clueParam) {
         // Check state exists (must have scanned start QR first)
         const s = getState();
-        if (!s) { showScreen("screen-invalid"); return; }
+        if (!s) { showScreen("screen-no-start"); return; }
         handleClue(clueParam);
         return;
       }
