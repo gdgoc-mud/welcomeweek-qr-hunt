@@ -1004,22 +1004,48 @@
       font-size: 9px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #334155;
+      color: #e2e8f0;
       margin-bottom: 10px;
     }
 
     .t3-task-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
       padding: 6px 8px;
-      border-radius: 4px;
-      margin-bottom: 4px;
+      border-radius: 0;
+      margin-bottom: 8px;
       transition: all 0.4s;
     }
 
-    .t3-task-item.done { background: #052e1688; }
-    .t3-task-item.pending { background: #0d1535; }
+    .t3-task-item summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      list-style: none; /* Hide default arrow */
+    }
+
+    .t3-task-item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .t3-task-item-desc {
+      font-size: 11px;
+      color: #cbd5e1;
+      padding-top: 6px;
+      padding-left: 26px; /* align with text */
+      line-height: 1.4;
+    }
+
+    .t3-task-item.done {
+      background: rgba(5, 46, 22, 0.4);
+      border: 2px solid #4ade80;
+      box-shadow: 3px 3px 0 #4ade80;
+    }
+    
+    .t3-task-item.pending {
+      background: transparent;
+      border: 2px solid #64748b;
+      box-shadow: 3px 3px 0 #64748b;
+    }
 
     .t3-task-item-icon {
       width: 18px;
@@ -1039,21 +1065,44 @@
     }
 
     .t3-task-item.done .t3-task-item-name { color: #86efac; }
-    .t3-task-item.pending .t3-task-item-name { color: #334155; }
+    .t3-task-item.pending .t3-task-item-name { color: #f8fafc; }
+
+    .t3-task-item[open] .t3-task-item-desc {
+      animation: sweepDown 0.3s ease-out forwards;
+    }
+
+    @keyframes sweepDown {
+      from { opacity: 0; transform: translateY(-5px); margin-top: -10px; }
+      to { opacity: 1; transform: translateY(0); margin-top: 0; }
+    }
+
+    .t3-expand-icon {
+      display: inline-block;
+      font-size: 10px;
+      margin-left: 6px;
+      opacity: 0.7;
+      font-weight: normal;
+      transition: transform 0.3s ease;
+    }
+
+    .t3-task-item[open] .t3-expand-icon {
+      transform: rotate(180deg);
+    }
 
     /* Intro */
     .t3-intro-box {
       width: 100%;
-      background: #0a0f2e;
-      border: 1px solid #7dd3fc33;
-      border-radius: 6px;
+      background: transparent;
+      border: 2px solid #7dd3fc;
+      box-shadow: 4px 4px 0 #7dd3fc;
+      border-radius: 0px;
       padding: 20px;
       text-align: center;
     }
 
     .t3-intro-box p {
       font-size: 13px;
-      color: #94a3b8;
+      color: #e0f2fe;
       line-height: 1.65;
       margin-top: 8px;
     }
@@ -1202,6 +1251,33 @@
     #screen-t4 {
       padding: 32px 20px 60px;
       gap: 14px;
+      background: #050510;
+      color: #fff;
+    }
+
+    #screen-t4 .nb-card {
+      background: #0a0f2e;
+      border: 3px solid #7dd3fc;
+      box-shadow: 6px 6px 0 #7dd3fc;
+      color: #e0f2fe;
+    }
+
+    #screen-t4 .nb-label {
+      color: #7dd3fc;
+    }
+
+    #screen-t4 .nb-track-badge {
+      background: transparent;
+      border: 2px solid #7dd3fc;
+      box-shadow: 4px 4px 0 #7dd3fc;
+      color: #fff;
+    }
+
+    #screen-t4 .nb-btn-ghost {
+      border: 2px dashed #7dd3fc;
+      background: rgba(125, 211, 252, 0.1);
+      color: #7dd3fc;
+      box-shadow: none;
     }
 
     .wordle-grid {
@@ -1219,7 +1295,7 @@
     .wordle-cell {
       width: 52px;
       height: 52px;
-      border: 3px solid var(--ink);
+      border: 3px solid #64748b;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1227,29 +1303,35 @@
       font-size: 20px;
       text-transform: uppercase;
       transition: all 0.3s;
-      background: var(--paper);
+      background: transparent;
+      color: #fff;
+      box-shadow: 3px 3px 0 #64748b;
     }
 
     .wordle-cell.correct {
-      background: #34A853;
-      color: #fff;
-      border-color: #34A853;
+      background: #052e16;
+      color: #86efac;
+      border-color: #4ade80;
+      box-shadow: 3px 3px 0 #4ade80;
     }
 
     .wordle-cell.present {
-      background: #FBBC04;
-      color: #fff;
-      border-color: #FBBC04;
+      background: #451a03;
+      color: #fde047;
+      border-color: #facc15;
+      box-shadow: 3px 3px 0 #facc15;
     }
 
     .wordle-cell.absent {
-      background: #555;
-      color: #fff;
-      border-color: #555;
+      background: #0f172a;
+      color: #475569;
+      border-color: #1e293b;
+      box-shadow: 3px 3px 0 #1e293b;
     }
 
     .wordle-cell.filled {
-      border-color: #4285F4;
+      border-color: #7dd3fc;
+      box-shadow: 3px 3px 0 #7dd3fc;
     }
 
     .wordle-keyboard {
@@ -1269,20 +1351,21 @@
     .w-key {
       padding: 12px 6px;
       min-width: 30px;
-      background: var(--paper);
-      border: 2px solid var(--ink);
+      background: #0a0f2e;
+      border: 2px solid #7dd3fc;
+      color: #e0f2fe;
       font-family: var(--gs);
       font-weight: 700;
       font-size: 12px;
       cursor: pointer;
       text-transform: uppercase;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 3px 3px 0 #7dd3fc;
       transition: all 0.15s;
       text-align: center;
     }
 
     .w-key:active {
-      transform: translate(2px, 2px);
+      transform: translate(3px, 3px);
       box-shadow: none;
     }
 
@@ -1292,21 +1375,24 @@
     }
 
     .w-key.correct {
-      background: #34A853;
-      color: #fff;
-      border-color: #34A853;
+      background: #052e16;
+      color: #86efac;
+      border-color: #4ade80;
+      box-shadow: 3px 3px 0 #4ade80;
     }
 
     .w-key.present {
-      background: #FBBC04;
-      color: #fff;
-      border-color: #FBBC04;
+      background: #451a03;
+      color: #fde047;
+      border-color: #facc15;
+      box-shadow: 3px 3px 0 #facc15;
     }
 
     .w-key.absent {
-      background: #555;
-      color: #fff;
-      border-color: #555;
+      background: #0f172a;
+      color: #475569;
+      border-color: #1e293b;
+      box-shadow: 3px 3px 0 #1e293b;
     }
 
     .t4-dots {
@@ -1319,19 +1405,26 @@
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      border: 2px solid var(--ink);
+      border: 2px solid #64748b;
+      box-shadow: 2px 2px 0 #64748b;
     }
 
     .t4-dot.done {
-      background: #34A853;
+      background: #4ade80;
+      border-color: #22c55e;
+      box-shadow: 2px 2px 0 #22c55e;
     }
 
     .t4-dot.waiting {
-      background: #FBBC04;
+      background: #facc15;
+      border-color: #eab308;
+      box-shadow: 2px 2px 0 #eab308;
     }
 
     .t4-dot.current {
-      background: #4285F4;
+      background: #7dd3fc;
+      border-color: #38bdf8;
+      box-shadow: 2px 2px 0 #38bdf8;
       animation: pulse 1s infinite;
     }
 
@@ -1343,18 +1436,20 @@
       width: 100%;
       max-width: 500px;
       padding: 10px 16px;
-      background: #fef3c7;
-      border: 2px solid #FBBC04;
+      background: #451a03;
+      border: 2px solid #facc15;
+      box-shadow: 4px 4px 0 #facc15;
       font-size: 13px;
-      color: #92400e;
+      color: #fef08a;
       text-align: center;
       display: none;
     }
 
     .t4-found-location {
-      background: var(--ink);
-      color: #fff;
-      border: var(--border);
+      background: #0a0f2e;
+      color: #e0f2fe;
+      border: 3px solid #7dd3fc;
+      box-shadow: 6px 6px 0 #7dd3fc;
       padding: 20px;
       text-align: center;
       width: 100%;
@@ -1365,13 +1460,14 @@
       font-weight: 700;
       font-size: 36px;
       letter-spacing: 3px;
-      color: #34A853;
+      color: #4ade80;
       margin: 8px 0;
+      text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
     }
 
     .t4-found-location p {
       font-size: 13px;
-      color: #aaa;
+      color: #7dd3fc;
       font-family: var(--gm);
     }
 
@@ -1747,7 +1843,7 @@
         <div class="t3-logo-area">
           <span class="t3-ship">🚀</span>
           <div>
-            <div class="t3-title" id="t3Title">ENDO STATION</div>
+            <div class="t3-title" id="t3Title">ENDO AXIOM</div>
             <div class="t3-subtitle" id="t3Subtitle">Emergency Task Protocol · Active</div>
           </div>
         </div>
@@ -1768,7 +1864,7 @@
       <div class="t3-intro-box" id="t3IntroBox" style="display:none">
         <div style="font-size:40px;margin-bottom:10px">👨‍🚀</div>
         <div style="font-weight:700;font-size:18px;color:#7dd3fc">Welcome aboard, Crewmate.</div>
-        <p>The Endo Station has been compromised. Systems are failing across the campus. Your mission: locate and complete all 8 emergency tasks hidden around the station to restore full operation. Tasks can be done in any order.</p>
+        <p>The Endo Axiom has been compromised. Systems are failing across the campus. Your mission: locate and complete all 8 emergency tasks hidden around the station to restore full operation. Tasks can be done in any order.</p>
         <p style="margin-top:10px;color:#334155;font-family:var(--gm);font-size:10px;letter-spacing:1px">BEWARE: NON-PATHWAY QR CODES ARE IMPOSTOR CODES</p>
       </div>
 
@@ -1788,7 +1884,7 @@
 
       <!-- Task manifest -->
       <div class="t3-manifest" id="t3Manifest" style="display:none">
-        <div class="t3-manifest-title">📋 Task Manifest — Endo Station</div>
+        <div class="t3-manifest-title">📋 Task Manifest — Endo Axiom</div>
         <div id="t3TaskList"></div>
       </div>
 
@@ -1796,7 +1892,7 @@
       <div class="t3-complete-banner" id="t3CompleteBanner" style="display:none">
         <div style="font-size:36px;margin-bottom:8px">✅</div>
         <div class="t3-title">All Systems Restored!</div>
-        <div style="font-size:13px;color:#86efac;margin-top:8px">Endo Station is fully operational. Head to the GDGoC booth and show this screen!</div>
+        <div style="font-size:13px;color:#86efac;margin-top:8px">Endo Axiom is fully operational. Head to the GDGoC booth and show this screen!</div>
       </div>
 
       <button class="t3-btn" onclick="resetProgress()">↩ Switch pathway</button>
@@ -1815,8 +1911,8 @@
 
     <!-- Wordle UI -->
     <div class="nb-card" id="t4WordleCard" style="max-width:500px;display:none">
-      <div class="nb-label" id="t4WordleLabel">Wordle #1 of 8</div>
-      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:14px" id="t4Instruction"></div>
+      <div class="nb-label" id="t4WordleLabel" style="color: #7dd3fc;">Wordle #1 of 8</div>
+      <div style="font-size:13px;color:#cbd5e1;margin-bottom:14px" id="t4Instruction"></div>
       <div class="wordle-grid" id="wordleGrid" style="margin-bottom:10px"></div>
       <div id="t4Msg" class="msg-box" style="display:none;margin-top:8px"></div>
     </div>
@@ -1959,42 +2055,42 @@
       {
         name: "Faulty Reactor-core Garbage Disposal",
         desc: "Kid let me tell you something… never buy a reactor-core from a SoCal AI startup company… I learned that mistake the hard way. Take this faulty reactor to the ship's garbage disposal unit and throw it away. The disposal unit should be located in the bottom of the ship.",
-        mapX: 38, mapY: 82,  // ← EDIT: First floor stairs door
+        mapX: 48, mapY: 64,  // ← EDIT: First floor stairs door
       },
       {
         name: "Make Ship Sustenance Burger-goo",
         desc: "In order to adequately pilot the navigation of our ship, our navigation lead needs to… refuel… As per his requests, a scrumptious burger is to be delivered. Located in the pantry fridge are the ingredients for The Perfect Burger-goo™, please prepare the burger and notify our navigation lead using the QR code.",
-        mapX: 50, mapY: 14,  // ← EDIT: Cafeteria (Pantry)
+        mapX: 55, mapY: 14,  // ← EDIT: Cafeteria (Pantry)
       },
       {
         name: "Find the Impostor",
         desc: "WARNING: IMPOSTOR FOUND IN ADMIN. Watch your back kid, an impostor was found in the Admin room 10 minutes ago. Security cameras found them in the middle of two innocent astronauts. Locate the impostor to save your fellow comrades!",
-        mapX: 43, mapY: 34,  // ← EDIT: Admin (Lobby)
+        mapX: 40, mapY: 34,  // ← EDIT: Admin (Lobby)
       },
       {
         name: "Fix Wiring in Electrical",
         desc: "Our communication systems have been going haywire recently and we need your help. Head to Electrical and fix the short circuit by rewiring the circuit. The notorious ghost gang seems to be the culprit.",
-        mapX: 18, mapY: 75,  // ← EDIT: Electrical (Games Room)
+        mapX: 18, mapY: 85,  // ← EDIT: Electrical (Games Room)
       },
       {
         name: "Water the Plants",
         desc: "There seems to be a leak in the automatic water dispenser, patch the water pot leak and water the plants.",
-        mapX: 32, mapY: 24,  // ← EDIT: Weapons (Rest Zone)
+        mapX: 38, mapY: 19,  // ← EDIT: Weapons (Rest Zone)
       },
       {
         name: "Locate our Missing Robot Helper",
         desc: "Our robot seems to be malfunctioning or simply slacking off... Put it in rice or smack the back of the metal to wake it up. Do what needs to be done — get it to work, the trash needs to be taken out.",
-        mapX: 72, mapY: 74,  // ← EDIT: Cockpit (Touchdown 118)
+        mapX: 67, mapY: 74,  // ← EDIT: Cockpit (Touchdown 118)
       },
       {
         name: "Destroy Meteors",
         desc: "Enemy towers are spotted harbouring lasers and spy tech. Look over and under each of their spyware tech and find their main power outlet and cut their source clean. We're counting on you, comrade.",
-        mapX: 55, mapY: 34,  // ← EDIT: Navigation (Xbox Room)
+        mapX: 15, mapY: 84,  // ← EDIT: Navigation (Xbox Room)
       },
       {
         name: "Catch the (Alien) Predator",
         desc: "The spaceship flashes red. Message blaring through the system speakers: \"There's been a breach in the containment, foreign entity detected.\" Catch the predator before it causes havoc and disrupts system functioning.",
-        mapX: 44, mapY: 62,  // ← EDIT: Outside men's restroom
+        mapX: 44, mapY: 44,  // ← EDIT: Outside men's restroom
       },
     ];
     const T3_CLUES = {
@@ -2425,12 +2521,17 @@
     }
 
     // Render map markers based on completed tasks
-    function renderT3Map(scanned) {
+    function renderT3Map(state) {
+      const scanned = state.scanned || {};
       const overlay = document.getElementById("t3MapOverlay");
       const container = document.getElementById("t3MapContainer");
       overlay.innerHTML = "";
-      const latestClue = Object.values(scanned).length > 0
-        ? Math.max(...Object.values(scanned).map(v => v.clue)) : null;
+      
+      let playerPos = T3_PLAYER_START;
+      if (state.lastClue) {
+        const lastTask = T3_TASKS[state.lastClue - 1];
+        playerPos = { x: lastTask.mapX, y: lastTask.mapY };
+      }
 
       T3_TASKS.forEach((task, i) => {
         const taskNum = i + 1;
@@ -2444,16 +2545,14 @@
         overlay.appendChild(marker);
       });
 
-      // Player location marker — show at position of last scanned task
-      if (latestClue) {
-        const lastTask = T3_TASKS[latestClue - 1];
-        const player = document.createElement("div");
-        player.className = "t3-player-marker";
-        player.style.left = (lastTask.mapX + 4) + "%";
-        player.style.top = (lastTask.mapY - 4) + "%";
-        player.innerHTML = `<img src="player_location.png" alt="You" onerror="this.parentElement.innerHTML='▶'">`;
-        overlay.appendChild(player);
-      }
+      // Player location marker — show at position of last scanned task or start position
+      const player = document.createElement("div");
+      player.className = "t3-player-marker";
+      // Sit slightly to the left
+      player.style.left = (playerPos.x - 10) + "%";
+      player.style.top = playerPos.y + "%";
+      player.innerHTML = `<img src="player_location.png" alt="You" onerror="this.parentElement.innerHTML='▶'">`;
+      overlay.appendChild(player);
     }
 
     function renderT3(state, fromStart = false) {
@@ -2466,10 +2565,10 @@
       document.getElementById("t3ProgressBadge").textContent = `${count} / 8`;
 
       // Map always shown
-      renderT3Map(scanned);
+      renderT3Map(state);
 
       if (fromStart || count === 0) {
-        document.getElementById("t3Title").textContent = "ENDO STATION";
+        document.getElementById("t3Title").textContent = "ENDO AXIOM";
         document.getElementById("t3Subtitle").textContent = "Emergency Task Protocol · Active";
         show("t3IntroBox"); hide("t3TaskCard"); hide("t3Manifest"); hide("t3CompleteBanner");
         // Show task manifest in intro state with all pending
@@ -2505,14 +2604,17 @@
       list.innerHTML = "";
       T3_TASKS.forEach((task, i) => {
         const done = Object.values(scanned).some(v => v.clue === i + 1);
-        const item = document.createElement("div");
+        const item = document.createElement("details");
         item.className = `t3-task-item ${done ? 'done' : 'pending'}`;
         const iconSrc = done ? "task_complete.png" : "task_indicator.png";
         item.innerHTML = `
-          <div class="t3-task-item-icon">
-            <img src="${iconSrc}" alt="${done ? '✓' : '!'}" onerror="this.parentElement.innerHTML='${done ? '✅' : '❗'}'">
-          </div>
-          <div class="t3-task-item-name">${task.name}</div>
+          <summary>
+            <div class="t3-task-item-icon">
+              <img src="${iconSrc}" alt="${done ? '✓' : '!'}" onerror="this.parentElement.innerHTML='${done ? '✅' : '❗'}'">
+            </div>
+            <div class="t3-task-item-name">${task.name} <span class="t3-expand-icon">▼</span></div>
+          </summary>
+          <div class="t3-task-item-desc">${task.desc}</div>
         `;
         list.appendChild(item);
       });
