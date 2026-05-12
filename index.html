@@ -2105,17 +2105,28 @@
     };
 
     // TRACK 4 — Wordle
-    // words[i] = answer for wordle i+1; correct guess → location of QR code i+1
-    const T4_WORDS = ["stairs", "pantry", "lobby", "games", "rest", "xbox", "jenga", "doors"];
-    const T4_HINTS = [
-      "Think vertically. Not the lift.",
-      "Where hunger goes to hide.",
-      "The first face of the building.",
-      "Where competition lives.",
-      "Sit. Breathe. Chill.",
-      "Buttons and controllers.",
-      "Don't let it fall.",
-      "The way in, or the way out.",
+    // Clue 1→8 maps exactly to words[0→7].
+    // Solving wordle N tells them where QR #N is. Scanning QR #N unlocks wordle N+1.
+    const T4_WORDS = ["softboard", "drawer", "gaming", "extinguish", "fridge", "trash", "stair", "arcade"];
+    const T4_VAGUE = [
+      "Something you'd pin a note on. Look up.",
+      "Something in a kitchen you'd slide open.",
+      "Where the screens and controllers live.",
+      "A red cylinder. Hopefully never needed.",
+      "Cold. Humming. Keeps things fresh.",
+      "It smells a bit. Hopefully not full.",
+      "Going up or down — not the lift.",
+      "Wooden blocks. Don't let it fall.",
+    ];
+    const T4_EXACT = [
+      "On the 2nd floor — check the softboard.",
+      "Fresh cutlery drawer. Yummy 🍴",
+      "The Xbox booth — you know where.",
+      "The fire extinguisher next to Touchdown 118. This is pretty fire ayeee 🔥",
+      "Hungry hungry hippo. Fridge in the pantry 🧃",
+      "Bin outside the library 🗑️",
+      "On one of the doors in the stairwell 🚪",
+      "Check one of the Jenga blocks 🪵",
     ];
     const T4_CLUES = {
       "T4_C1_A2j7": { track: 4, clue: 1 },
